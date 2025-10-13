@@ -224,6 +224,42 @@
         });
     }
     
+    // Show toast notification for minor earthquakes
+    function showToast(magnitude, location) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        
+        toast.innerHTML = `
+            <div class="toast-header">
+                <span>📱</span>
+                <span>Minor Earthquake Detected</span>
+            </div>
+            <div class="toast-body">
+                <div><span class="toast-magnitude">Magnitude ${magnitude}</span></div>
+                <div class="toast-location">${location}</div>
+                <div class="toast-time">${timeString}</div>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            // Remove from DOM after animation completes
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 5000);
+    }
+    
     // Check for new earthquakes and trigger alarm
     function checkForNewEarthquakes() {
         // Get the most recent earthquake from PHIVOLCS panel
@@ -262,10 +298,9 @@
                 playModerateAlarm(1);
                 showNotification('⚠️ EARTHQUAKE ALERT', `Magnitude ${magnitude} detected`);
             } else {
-                // Below 5.0 - play gentle text message sound
-                console.log('📱 Minor earthquake (below 5.0) - Text notification sound');
-                playTextSound();
-                showNotification('📱 Minor Earthquake', `Magnitude ${magnitude} detected`);
+                // Below 5.0 - no sound, show toast notification only
+                console.log('📱 Minor earthquake (below 5.0) - Toast notification only');
+                showToast(magnitude, location);
             }
         }
     }
