@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earthquake Alarm Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1d23;
+            color: #e9ecef;
+        }
+        h1 {
+            color: #fbbf24;
+            text-align: center;
+        }
+        .test-section {
+            background: #2d3139;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        button.critical {
+            background: #ef4444;
+        }
+        button.critical:hover {
+            background: #dc2626;
+        }
+        button.major {
+            background: #f97316;
+        }
+        button.major:hover {
+            background: #ea580c;
+        }
+        button.moderate {
+            background: #eab308;
+        }
+        button.moderate:hover {
+            background: #ca8a04;
+        }
+        button.minor {
+            background: #22c55e;
+        }
+        button.minor:hover {
+            background: #16a34a;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            background: #374151;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .info {
+            background: #1e3a5f;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔔 Earthquake Alarm Test</h1>
+    
+    <div class="info">
+        <strong>Instructions:</strong> Click any button below to test the alarm sounds. Make sure your volume is on!
+    </div>
+
+    <div class="test-section">
+        <h2>🚨 CRITICAL ALARM (Magnitude 7.0+)</h2>
+        <p><strong>⚠️ WARNING: VERY LOUD!</strong> Rising siren with 3 oscillators at 80% volume - designed to wake you up!</p>
+        <p>Plays 10 times for Manay 7.0+, or 8 times for other 7.0+ earthquakes</p>
+        <button class="critical" onclick="testCriticalAlarm()">
+            Test CRITICAL Siren (VERY LOUD!)
+        </button>
+        <div class="status" id="critical-status">Ready to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚠️ Major Earthquake (6.0+)</h2>
+        <p><strong>Loud dual-tone alarm</strong> - 2 oscillators, 60% volume, plays 6 times</p>
+        <button class="major" onclick="testMajorAlarm()">
+            Test Major Alarm (LOUD, 6x)
+        </button>
+        <div class="status" id="major-status">Ready to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>⚠️ Moderate Earthquake (5.0-5.9)</h2>
+        <p>Plays once - for magnitude 5.0-5.9 earthquakes</p>
+        <button class="moderate" onclick="testModerateAlarm()">
+            Test Moderate Alarm (1x beep)
+        </button>
+        <div class="status" id="moderate-status">Ready to test...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Minor Earthquake (Below 5.0)</h2>
+        <p>iPhone-like tri-tone - for earthquakes below magnitude 5.0</p>
+        <button class="minor" onclick="testMinorAlarm()">
+            Test Minor Alarm (Text Sound)
+        </button>
+        <div class="status" id="minor-status">Ready to test...</div>
+    </div>
+
+    <script>
+        let audioContext = null;
+
+        // Initialize audio context
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('🔊 Audio system initialized');
+            }
+        }
+
+        // Play CRITICAL alarm - very loud and aggressive
+        function playCriticalAlarm(times, statusId) {
+            initAudio();
+            
+            let playCount = 0;
+            const statusEl = document.getElementById(statusId);
+            
+            function playUrgentSiren() {
+                if (playCount >= times) {
+                    statusEl.textContent = `✓ Completed ${times} CRITICAL sirens`;
+                    return;
+                }
+                
+                statusEl.textContent = `🚨 Playing CRITICAL siren ${playCount + 1} of ${times}... (LOUD!)`;
+                
+                // Create THREE oscillators for maximum loudness
+                const osc1 = audioContext.createOscillator();
+                const osc2 = audioContext.createOscillator();
+                const osc3 = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                osc1.connect(gainNode);
+                osc2.connect(gainNode);
+                osc3.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Aggressive rising siren
+                const startFreq = 400;
+                const endFreq = 1200;
+                const duration = 0.8;
+                
+                osc1.frequency.setValueAtTime(startFreq, audioContext.currentTime);
+                osc1.frequency.exponentialRampToValueAtTime(endFreq, audioContext.currentTime + duration);
+                
+                osc2.frequency.setValueAtTime(startFreq * 1.5, audioContext.currentTime);
+                osc2.frequency.exponentialRampToValueAtTime(endFreq * 1.5, audioContext.currentTime + duration);
+                
+                osc3.frequency.setValueAtTime(startFreq * 2, audioContext.currentTime);
+                osc3.frequency.exponentialRampToValueAtTime(endFreq * 2, audioContext.currentTime + duration);
+                
+                osc1.type = 'square';
+                osc2.type = 'sawtooth';
+                osc3.type = 'square';
+                
+                // MAXIMUM VOLUME
+                gainNode.gain.setValueAtTime(0.8, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                osc1.start(audioContext.currentTime);
+                osc2.start(audioContext.currentTime);
+                osc3.start(audioContext.currentTime);
+                
+                osc1.stop(audioContext.currentTime + duration);
+                osc2.stop(audioContext.currentTime + duration);
+                osc3.stop(audioContext.currentTime + duration);
+                
+                playCount++;
+                
+                if (playCount < times) {
+                    setTimeout(playUrgentSiren, 400);
+                }
+            }
+            
+            playUrgentSiren();
+        }
+        
+        // Play MAJOR alarm (for 6.0+ magnitude)
+        function playMajorAlarm(times, statusId) {
+            initAudio();
+            
+            let playCount = 0;
+            const statusEl = document.getElementById(statusId);
+            
+            function playUrgentBeep() {
+                if (playCount >= times) {
+                    statusEl.textContent = `✓ Completed ${times} MAJOR alarms`;
+                    return;
+                }
+                
+                statusEl.textContent = `⚠️ Playing MAJOR alarm ${playCount + 1} of ${times}... (LOUD!)`;
+                
+                // TWO oscillators for louder sound
+                const osc1 = audioContext.createOscillator();
+                const osc2 = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                osc1.connect(gainNode);
+                osc2.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Dual-tone alarm
+                const freq1 = playCount % 2 === 0 ? 900 : 700;
+                const freq2 = freq1 * 1.5;
+                
+                osc1.frequency.value = freq1;
+                osc2.frequency.value = freq2;
+                
+                osc1.type = 'square';
+                osc2.type = 'sawtooth';
+                
+                // Louder - 60% volume
+                gainNode.gain.setValueAtTime(0.6, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+                
+                osc1.start(audioContext.currentTime);
+                osc2.start(audioContext.currentTime);
+                
+                osc1.stop(audioContext.currentTime + 0.6);
+                osc2.stop(audioContext.currentTime + 0.6);
+                
+                playCount++;
+                
+                if (playCount < times) {
+                    setTimeout(playUrgentBeep, 500);
+                }
+            }
+            
+            playUrgentBeep();
+        }
+        
+        // Play moderate alarm (for 5.0-5.9 magnitude)
+        function playModerateAlarm(times, statusId) {
+            initAudio();
+            
+            let playCount = 0;
+            const statusEl = document.getElementById(statusId);
+            
+            function playBeep() {
+                if (playCount >= times) {
+                    statusEl.textContent = `✓ Completed ${times} beeps`;
+                    return;
+                }
+                
+                statusEl.textContent = `🔊 Playing beep ${playCount + 1} of ${times}...`;
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // Single tone
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+                
+                playCount++;
+                
+                if (playCount < times) {
+                    setTimeout(playBeep, 600);
+                }
+            }
+            
+            playBeep();
+        }
+
+        // Play iPhone-like text message sound
+        function playTextSound(statusId) {
+            initAudio();
+            
+            const statusEl = document.getElementById(statusId);
+            statusEl.textContent = '📱 Playing tri-tone text sound...';
+            
+            // iPhone tri-tone: three quick notes
+            const notes = [1000, 800, 600]; // Frequencies in Hz
+            const noteDuration = 0.15; // seconds
+            const noteGap = 0.05; // seconds between notes
+            
+            notes.forEach((freq, index) => {
+                const startTime = audioContext.currentTime + (index * (noteDuration + noteGap));
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+                
+                // Envelope: quick attack, sustain, quick decay
+                gainNode.gain.setValueAtTime(0, startTime);
+                gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+                gainNode.gain.setValueAtTime(0.2, startTime + noteDuration - 0.02);
+                gainNode.gain.linearRampToValueAtTime(0, startTime + noteDuration);
+                
+                oscillator.start(startTime);
+                oscillator.stop(startTime + noteDuration);
+            });
+            
+            setTimeout(() => {
+                statusEl.textContent = '✓ Tri-tone completed';
+            }, 500);
+        }
+
+        // Test functions
+        function testCriticalAlarm() {
+            console.log('🚨 Testing CRITICAL alarm (7.0+) - VERY LOUD!');
+            playCriticalAlarm(10, 'critical-status');
+        }
+
+        function testMajorAlarm() {
+            console.log('⚠️ Testing MAJOR alarm (6.0+) - LOUD!');
+            playMajorAlarm(6, 'major-status');
+        }
+
+        function testModerateAlarm() {
+            console.log('⚠️ Testing MODERATE alarm (5.0-5.9)');
+            playModerateAlarm(1, 'moderate-status');
+        }
+
+        function testMinorAlarm() {
+            console.log('📱 Testing MINOR alarm (below 5.0)');
+            playTextSound('minor-status');
+        }
+
+        // Initialize on first click
+        document.addEventListener('click', initAudio, { once: true });
+    </script>
+</body>
+</html>

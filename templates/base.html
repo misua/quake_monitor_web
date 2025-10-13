@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Earthquake & Weather Monitor{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Leaflet CSS & JS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+    
+    <!-- Custom Theme Script -->
+    <script src="{{ url_for('static', path='/js/theme.js') }}"></script>
+    
+    <!-- Earthquake Alarm System -->
+    <script src="{{ url_for('static', path='/js/alarm.js') }}"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'day-bg': '#f8f9fa',
+                        'night-bg': '#1a1d23',
+                        'panel-day': '#ffffff',
+                        'panel-night': '#2d3139',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="transition-colors duration-300" id="app-body">
+    {% block content %}{% endblock %}
+    
+    <!-- Theme Script -->
+    <script src="/static/js/theme.js"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,41 @@
+<div class="panel p-2">
+    <h3 class="text-sm font-bold mb-1.5 text-yellow-500">🌧️ RAINFALL</h3>
+    
+    {% if rainfall %}
+    <!-- Status Badge -->
+    <div class="mb-2 p-1.5 rounded text-center text-xs font-semibold
+        {% if rainfall.status == 'WARNING' %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300
+        {% elif rainfall.status == 'ADVISORY' %}bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300
+        {% else %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% endif %}">
+        {{ rainfall.intensity }} Intensity
+    </div>
+    
+    <!-- Details -->
+    <div class="space-y-1 text-xs">
+        <div class="flex justify-between">
+            <span class="opacity-75">Region:</span>
+            <span class="font-semibold">{{ rainfall.region }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="opacity-75">City:</span>
+            <span class="font-semibold">{{ rainfall.city }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="opacity-75">Flood Risk:</span>
+            <span class="font-semibold {% if rainfall.flood_risk == 'High' %}text-red-500{% elif rainfall.flood_risk == 'Moderate' %}text-orange-500{% else %}text-green-500{% endif %}">
+                {{ rainfall.flood_risk }}
+            </span>
+        </div>
+        {% if rainfall.accumulated_24h != 'N/A' %}
+        <div class="flex justify-between">
+            <span class="opacity-75">24h Total:</span>
+            <span class="font-semibold">{{ rainfall.accumulated_24h }}</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="text-xs opacity-30 mt-2 italic">PAGASA</div>
+    {% else %}
+    <div class="text-center py-4 text-xs">No data</div>
+    {% endif %}
+</div>

@@ -1,0 +1,31 @@
+<div class="panel p-6">
+    <h2 class="text-xl font-bold mb-4 text-yellow-500">TSUNAMI WARNINGS</h2>
+    <p class="text-xs opacity-75 mb-4">Source: PHIVOLCS Tsunami Monitoring</p>
+    
+    {% if warnings %}
+    <div class="space-y-2">
+        {% for warning in warnings %}
+            {% if warning.magnitude %}
+            <!-- Actual tsunami/earthquake entry -->
+            <div class="p-3 rounded bg-orange-100 dark:bg-orange-900 border-l-4 border-orange-500">
+                <div class="flex justify-between items-start mb-1">
+                    <span class="font-bold text-lg text-orange-700 dark:text-orange-300">M {{ warning.magnitude }}</span>
+                    <span class="text-xs bg-orange-500 text-white px-2 py-1 rounded">{{ warning.advisory }}</span>
+                </div>
+                <div class="font-semibold text-sm">{{ warning.location }}</div>
+                <div class="text-xs opacity-75 mt-1">{{ warning.datetime }}</div>
+            </div>
+            {% elif warning.message %}
+            <!-- Status message -->
+            <div class="p-3 rounded text-center
+                {% if warning.level == 'error' %}bg-gray-100 dark:bg-gray-800
+                {% else %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% endif %}">
+                <div class="font-semibold">{{ warning.message }}</div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-green-500">✓ No active tsunami warnings</div>
+    {% endif %}
+</div>

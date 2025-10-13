@@ -1,0 +1,21 @@
+<div class="panel p-2">
+    <h3 class="text-sm font-bold mb-1.5 text-yellow-500">🌀 TYPHOON</h3>
+    
+    {% if typhoon %}
+        {% if typhoon.active %}
+        <div class="p-2 rounded bg-red-100 dark:bg-red-900 border border-red-500 mb-2">
+            <div class="font-bold text-sm">{{ typhoon.name }}</div>
+            <div class="text-xs mt-1 space-y-0.5">
+                <div>{{ typhoon.category }}</div>
+                <div>{{ typhoon.wind_speed }} km/h</div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-green-500 text-xs">✓ No active</div>
+        {% endif %}
+    {% else %}
+    <div class="text-center py-4 text-xs">No data</div>
+    {% endif %}
+    
+    <div class="text-xs opacity-30 mt-1 italic">PAGASA</div>
+</div>

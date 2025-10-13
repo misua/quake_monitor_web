@@ -1,0 +1,45 @@
+<div class="panel p-3">
+    <h3 class="text-lg font-bold mb-3 text-yellow-500">USGS MAJOR EARTHQUAKES</h3>
+    
+    {% if earthquakes %}
+    <div class="space-y-2">
+        {% for eq in earthquakes[:6] %}
+        <div class="flex gap-2 items-start p-2 bg-gray-100 dark:bg-gray-800 rounded">
+            <!-- Magnitude Badge -->
+            <div class="flex-shrink-0 w-12 h-12 rounded flex items-center justify-center font-bold text-white
+                {% if eq.magnitude >= 6.0 %}bg-red-500
+                {% elif eq.magnitude >= 5.0 %}bg-orange-500
+                {% else %}bg-yellow-600{% endif %}">
+                {{ "%.1f"|format(eq.magnitude) }}
+            </div>
+            
+            <!-- Details -->
+            <div class="flex-1 text-xs">
+                <div class="font-semibold mb-1">{{ eq.location[:45] }}{% if eq.location|length > 45 %}...{% endif %}</div>
+                <div class="opacity-75 space-y-0.5">
+                    <div>{{ eq.datetime }}</div>
+                    <div class="flex gap-3">
+                        <span>Depth: {{ "%.0f"|format(eq.depth) }} km</span>
+                        {% if eq.felt %}<span>Felt: {{ eq.felt }}</span>{% endif %}
+                    </div>
+                    {% if eq.tsunami %}<div class="text-red-500 font-semibold">⚠️ TSUNAMI WARNING</div>{% endif %}
+                    {% if eq.alert %}
+                    <div class="inline-block px-2 py-0.5 rounded text-xs font-semibold
+                        {% if eq.alert == 'red' %}bg-red-500 text-white
+                        {% elif eq.alert == 'orange' %}bg-orange-500 text-white
+                        {% elif eq.alert == 'yellow' %}bg-yellow-500 text-black
+                        {% else %}bg-green-500 text-white{% endif %}">
+                        Alert: {{ eq.alert|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="text-xs opacity-30 mt-2 italic">Source: USGS</p>
+    {% else %}
+    <div class="text-center py-8">No major earthquakes (4.5+) in the Philippines region</div>
+    <p class="text-xs opacity-30 mt-2 italic">Source: USGS</p>
+    {% endif %}
+</div>

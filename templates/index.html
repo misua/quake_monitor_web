@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen p-4 md:p-6">
+    <!-- Header -->
+    <header class="text-center mb-6">
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">🌍 EARTHQUAKE & WEATHER MONITOR</h1>
+        <p class="text-sm opacity-75">Real-time monitoring for {{ location }}</p>
+    </header>
+    
+    <!-- Main Content - Compact Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <!-- Left Column -->
+        <div class="space-y-3">
+            <!-- Weather Panel -->
+            <div id="weather-panel" 
+                 hx-get="/api/weather" 
+                 hx-trigger="load, every 30s"
+                 hx-swap="innerHTML"
+                 class="panel-container">
+                <div class="loading">Loading weather data...</div>
+            </div>
+            
+            <!-- PHIVOLCS Earthquakes -->
+            <div id="phivolcs-panel" 
+                 hx-get="/api/earthquakes/phivolcs" 
+                 hx-trigger="load, every 60s"
+                 hx-swap="innerHTML"
+                 class="panel-container">
+                <div class="loading">Loading PHIVOLCS data...</div>
+            </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="space-y-3">
+            <!-- Tsunami & Sea Level Combined Panel -->
+            <div id="tsunami-sealevel-panel" 
+                 hx-get="/api/tsunami-sealevel" 
+                 hx-trigger="load, every 300s"
+                 hx-swap="innerHTML"
+                 class="panel-container">
+                <div class="loading">Loading tsunami & sea level data...</div>
+            </div>
+            
+            <!-- USGS with Typhoon and Rainfall -->
+            <div class="grid grid-cols-3 gap-2">
+                <!-- Typhoon Tracker -->
+                <div id="typhoon-panel-right" 
+                     hx-get="/api/typhoon" 
+                     hx-trigger="load, every 300s"
+                     hx-swap="innerHTML"
+                     class="panel-container">
+                    <div class="loading text-xs">Loading...</div>
+                </div>
+                
+                <!-- Rainfall Monitor -->
+                <div id="rainfall-panel-right" 
+                     hx-get="/api/rainfall" 
+                     hx-trigger="load, every 300s"
+                     hx-swap="innerHTML"
+                     class="panel-container">
+                    <div class="loading text-xs">Loading...</div>
+                </div>
+                
+                <!-- USGS Major Earthquakes -->
+                <div id="usgs-panel" 
+                     hx-get="/api/earthquakes/usgs" 
+                     hx-trigger="load, every 60s"
+                     hx-swap="innerHTML"
+                     class="panel-container">
+                    <div class="loading text-xs">Loading...</div>
+                </div>
+            </div>
+            
+            <!-- Top 5 Earthquake Clusters -->
+            <div id="top5-panel" 
+                 hx-get="/api/earthquakes/top5" 
+                 hx-trigger="load, every 60s"
+                 hx-swap="innerHTML"
+                 class="panel-container">
+                <div class="loading text-xs">Loading...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="text-center mt-6 text-sm opacity-50">
+        <p>Last updated: <span id="update-time">{{ current_time }}</span></p>
+        <p>Data sources: PHIVOLCS, USGS, Open-Meteo, PAGASA, IOC Sea Level</p>
+    </footer>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Update timestamp on HTMX requests
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        document.getElementById('update-time').textContent = new Date().toLocaleString();
+    });
+</script>
+{% endblock %}
