@@ -1,42 +1,66 @@
 <div class="panel p-3">
-    <div class="flex justify-between items-start mb-2">
-        <div>
-            <h3 class="text-lg font-bold text-yellow-500">PHIVOLCS EARTHQUAKE MONITOR</h3>
-            <p class="text-xs opacity-75">Source: PHIVOLCS (Real-time, Philippines)</p>
-        </div>
-        <div class="text-xs opacity-50">
-            <span id="phivolcs-update-time"></span>
-            <script>
-                document.getElementById('phivolcs-update-time').textContent = new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
-            </script>
-        </div>
+    <div class="flex justify-between items-center mb-3">
+        <h2 class="text-sm sm:text-base font-bold text-yellow-500">🔔 PHIVOLCS</h2>
+        <div class="text-xs opacity-50">Recent Earthquakes</div>
     </div>
     
     {% if earthquakes %}
-    <!-- Grid: Earthquake List (left) and Map (right) -->
+    <!-- Grid: Latest Earthquake + List (left) and Map (right) -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <!-- Left: Earthquake List -->
-        <div class="space-y-1.5">
-        {% for eq in earthquakes[:6] %}
-        <div class="flex gap-2 {% if loop.index == 1 %}p-1.5{% else %}p-1{% endif %} rounded {% if loop.index == 1 %}bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700{% else %}bg-gray-50 dark:bg-gray-800{% endif %}"
-             data-eq-id="{{ eq.id }}"
-             data-magnitude="{{ eq.magnitude }}"
-             data-location="{{ eq.location }}">
-            <!-- Magnitude Badge -->
-            <div class="flex-shrink-0 {% if loop.index == 1 %}w-12 h-10{% else %}w-10 h-8{% endif %} rounded flex items-center justify-center font-bold text-white {% if loop.index == 1 %}text-sm{% else %}text-xs{% endif %}
-                {% if eq.magnitude|float >= 6.0 %}bg-red-500
-                {% elif eq.magnitude|float >= 4.0 %}bg-orange-500
-                {% else %}bg-green-500{% endif %}">
-                {{ eq.magnitude }}
+        <!-- Left: Latest Earthquake + Previous List -->
+        <div>
+            <!-- Latest Earthquake - HUGE Display for Distance Viewing -->
+            <div class="bg-gray-800 dark:bg-gray-900 text-white rounded-lg p-4 mb-3">
+                <div class="text-sm font-bold text-yellow-400 mb-3">🔔 LATEST EARTHQUAKE</div>
+                
+                <!-- HUGE Magnitude Badge -->
+                <div class="mb-3">
+                    <div class="inline-block px-6 py-4 rounded-lg
+                        {% if earthquakes[0].magnitude|float >= 6.0 %}bg-red-500
+                        {% elif earthquakes[0].magnitude|float >= 4.0 %}bg-orange-500
+                        {% else %}bg-green-500{% endif %}">
+                        <div class="text-6xl sm:text-7xl font-black text-white leading-none">{{ earthquakes[0].magnitude }}</div>
+                        <div class="text-sm font-bold text-white mt-1 text-center">MAGNITUDE</div>
+                    </div>
+                </div>
+                
+                <!-- LARGE Location Text -->
+                <div class="mb-2">
+                    <div class="text-2xl sm:text-3xl font-bold leading-tight">{{ earthquakes[0].location }}</div>
+                </div>
+                
+                <!-- Large Time -->
+                <div class="text-lg sm:text-xl opacity-90">{{ earthquakes[0].datetime }}</div>
+                
+                <!-- Depth if available -->
+                {% if earthquakes[0].depth %}
+                <div class="text-base opacity-75 mt-2">Depth: {{ earthquakes[0].depth }}</div>
+                {% endif %}
             </div>
             
-            <!-- Details -->
-            <div class="flex-1 {% if loop.index == 1 %}text-xs{% else %}text-xs{% endif %}">
-                <div class="{% if loop.index == 1 %}font-semibold{% else %}font-medium{% endif %} leading-tight {% if loop.index > 1 %}opacity-75{% endif %}">{{ eq.location[:40] }}{% if eq.location|length > 40 %}...{% endif %}</div>
-                <div class="opacity-75 mt-0.5 {% if loop.index > 1 %}text-xs{% endif %}">{{ eq.datetime }}</div>
+            <!-- Previous Earthquakes List -->
+            <div class="space-y-1">
+                {% for eq in earthquakes[1:6] %}
+                <div class="flex gap-2 items-center p-1.5 rounded bg-gray-50 dark:bg-gray-800 text-xs"
+                     data-eq-id="{{ eq.id }}"
+                     data-magnitude="{{ eq.magnitude }}"
+                     data-location="{{ eq.location }}">
+                    <!-- Magnitude Badge -->
+                    <div class="flex-shrink-0 w-10 h-10 rounded flex items-center justify-center font-bold text-white text-sm
+                        {% if eq.magnitude|float >= 6.0 %}bg-red-500
+                        {% elif eq.magnitude|float >= 4.0 %}bg-orange-500
+                        {% else %}bg-green-500{% endif %}">
+                        {{ eq.magnitude }}
+                    </div>
+                    
+                    <!-- Details -->
+                    <div class="flex-1">
+                        <div class="font-medium leading-tight">{{ eq.location[:45] }}{% if eq.location|length > 45 %}...{% endif %}</div>
+                        <div class="opacity-60 mt-0.5">{{ eq.datetime }}</div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-        </div>
-        {% endfor %}
         </div>
         
         <!-- Right: Map -->
