@@ -30,6 +30,10 @@ LOCATION_NAME = "Davao City, Philippines"
 async def get_weather(request: Request):
     """Get weather data and render component"""
     try:
+        # Add parent directory to path for imports
+        PARENT_DIR = Path(__file__).parent.parent.parent
+        sys.path.insert(0, str(PARENT_DIR))
+        
         # Import typhoon, rainfall, and tide functions
         from pagasa_monitor import get_typhoon_status, fetch_rainfall_data
         from tide_monitor import get_tide_status
