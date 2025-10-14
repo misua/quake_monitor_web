@@ -6,7 +6,9 @@ Fetches tide data (high/low tide) from Stormglass.io API
 
 import requests
 import os
+import json
 from datetime import datetime, timedelta
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,10 +21,38 @@ STORMGLASS_BASE_URL = "https://api.stormglass.io/v2/tide/extremes/point"
 LATITUDE = float(os.getenv('LATITUDE', 7.190708))
 LONGITUDE = float(os.getenv('LONGITUDE', 125.455338))
 
-# Cache settings (to avoid exceeding 10 requests/day)
-_tide_cache = None
-_cache_timestamp = None
-CACHE_DURATION = 6 * 3600  # Cache for 6 hours
+# Cache settings - persistent JSON file
+CACHE_FILE = Path(__file__).parent / '.tide_cache.json'
+CACHE_DURATION = 12 * 3600  # Cache for 12 hours (only 2 API calls per day)
+
+
+def load_cache():
+    """Load tide data from cache file"""
+    try:
+        if CACHE_FILE.exists():
+            with open(CACHE_FILE, 'r') as f:
+                cache_data = json.load(f)
+                cache_time = datetime.fromisoformat(cache_data['timestamp'])
+                cache_age = (datetime.now() - cache_time).total_seconds()
+                
+                if cache_age < CACHE_DURATION:
+                    return cache_data['data']
+    except Exception as e:
+        print(f"Cache load error: {e}")
+    return None
+
+
+def save_cache(data):
+    """Save tide data to cache file"""
+    try:
+        cache_data = {
+            'timestamp': datetime.now().isoformat(),
+            'data': data
+        }
+        with open(CACHE_FILE, 'w') as f:
+            json.dump(cache_data, f)
+    except Exception as e:
+        print(f"Cache save error: {e}")
 
 
 def fetch_tide_data():
@@ -30,13 +60,10 @@ def fetch_tide_data():
     Fetch tide data from Stormglass.io
     Returns next high and low tides
     """
-    global _tide_cache, _cache_timestamp
-    
-    # Check cache first
-    if _tide_cache and _cache_timestamp:
-        cache_age = (datetime.now() - _cache_timestamp).total_seconds()
-        if cache_age < CACHE_DURATION:
-            return _tide_cache
+    # Check persistent cache first
+    cached_data = load_cache()
+    if cached_data:
+        return cached_data
     
     if not STORMGLASS_API_KEY:
         return {
@@ -112,9 +139,8 @@ def fetch_tide_data():
             'error': None
         }
         
-        # Update cache
-        _tide_cache = result
-        _cache_timestamp = datetime.now()
+        # Save to persistent cache
+        save_cache(result)
         
         return result
         
