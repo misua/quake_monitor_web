@@ -18,12 +18,12 @@
         <!-- Left: Earthquake List -->
         <div class="space-y-1.5">
         {% for eq in earthquakes[:6] %}
-        <div class="flex gap-2 p-1.5 rounded {% if loop.index == 1 %}bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700{% else %}bg-gray-50 dark:bg-gray-800{% endif %}"
+        <div class="flex gap-2 {% if loop.index == 1 %}p-1.5{% else %}p-1{% endif %} rounded {% if loop.index == 1 %}bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700{% else %}bg-gray-50 dark:bg-gray-800{% endif %}"
              data-eq-id="{{ eq.id }}"
              data-magnitude="{{ eq.magnitude }}"
              data-location="{{ eq.location }}">
             <!-- Magnitude Badge -->
-            <div class="flex-shrink-0 w-12 h-10 rounded flex items-center justify-center font-bold text-white text-sm
+            <div class="flex-shrink-0 {% if loop.index == 1 %}w-12 h-10{% else %}w-10 h-8{% endif %} rounded flex items-center justify-center font-bold text-white {% if loop.index == 1 %}text-sm{% else %}text-xs{% endif %}
                 {% if eq.magnitude|float >= 6.0 %}bg-red-500
                 {% elif eq.magnitude|float >= 4.0 %}bg-orange-500
                 {% else %}bg-green-500{% endif %}">
@@ -31,9 +31,9 @@
             </div>
             
             <!-- Details -->
-            <div class="flex-1 text-xs">
-                <div class="font-semibold leading-tight">{{ eq.location[:40] }}{% if eq.location|length > 40 %}...{% endif %}</div>
-                <div class="opacity-75 mt-0.5">{{ eq.datetime }}</div>
+            <div class="flex-1 {% if loop.index == 1 %}text-xs{% else %}text-xs{% endif %}">
+                <div class="{% if loop.index == 1 %}font-semibold{% else %}font-medium{% endif %} leading-tight {% if loop.index > 1 %}opacity-75{% endif %}">{{ eq.location[:40] }}{% if eq.location|length > 40 %}...{% endif %}</div>
+                <div class="opacity-75 mt-0.5 {% if loop.index > 1 %}text-xs{% endif %}">{{ eq.datetime }}</div>
             </div>
         </div>
         {% endfor %}

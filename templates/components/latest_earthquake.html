@@ -1,0 +1,39 @@
+<div class="panel p-4">
+    {% if earthquake %}
+    <div class="text-center">
+        <h3 class="text-sm font-bold text-yellow-500 mb-3">🔔 LATEST EARTHQUAKE</h3>
+        
+        <!-- Large Magnitude Display -->
+        <div class="mb-3">
+            <div class="inline-block px-6 py-4 rounded-lg {% if earthquake.magnitude|float >= 6.0 %}bg-red-500{% elif earthquake.magnitude|float >= 4.0 %}bg-orange-500{% else %}bg-green-500{% endif %}">
+                <div class="text-white">
+                    <div class="text-5xl sm:text-6xl font-black leading-none">{{ earthquake.magnitude }}</div>
+                    <div class="text-sm sm:text-base font-bold mt-1">MAGNITUDE</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Location - Large and Bold -->
+        <div class="text-xl sm:text-2xl font-bold leading-tight mb-2 px-2">
+            {{ earthquake.location }}
+        </div>
+        
+        <!-- Time -->
+        <div class="text-sm opacity-75 mb-3">
+            {{ earthquake.datetime }}
+        </div>
+        
+        <!-- Additional Info -->
+        <div class="flex justify-center gap-4 text-xs opacity-60">
+            {% if earthquake.depth %}
+            <div><span class="font-semibold">Depth:</span> {{ earthquake.depth }}</div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-6">
+        <div class="text-4xl mb-2">✓</div>
+        <div class="text-sm opacity-75">No recent earthquakes</div>
+    </div>
+    {% endif %}
+</div>

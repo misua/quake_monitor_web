@@ -80,6 +80,15 @@
                  class="panel-container">
                 <div class="loading text-xs">Loading...</div>
             </div>
+            
+            <!-- Latest Earthquake - Large Display -->
+            <div id="latest-earthquake-panel" 
+                 hx-get="/api/earthquakes/latest" 
+                 hx-trigger="load, every 30s"
+                 hx-swap="innerHTML"
+                 class="panel-container">
+                <div class="loading text-xs">Loading...</div>
+            </div>
         </div>
     </div>
     

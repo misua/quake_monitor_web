@@ -267,3 +267,48 @@ async def get_top5(request: Request):
                 "component": "Top 5 panel"
             }
         )
+
+
+@router.get("/earthquakes/latest", response_class=HTMLResponse)
+async def get_latest_earthquake(request: Request):
+    """Get the most recent earthquake for large display"""
+    try:
+        earthquakes = fetch_phivolcs_earthquakes()
+        
+        if not earthquakes:
+            return templates.TemplateResponse(
+                "components/latest_earthquake.html",
+                {"request": request, "earthquake": None}
+            )
+        
+        # Get the most recent earthquake (first one)
+        latest = earthquakes[0]
+        
+        return templates.TemplateResponse(
+            "components/latest_earthquake.html",
+            {"request": request, "earthquake": latest}
+        )
+    except requests.exceptions.ConnectionError:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "network",
+                "title": "🔔 Connection Error",
+                "message": "Cannot load latest earthquake data.",
+                "component": "Latest Earthquake panel"
+            }
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "general",
+                "title": "🔔 Data Error",
+                "message": "Unable to load latest earthquake.",
+                "component": "Latest Earthquake panel"
+            }
+        )
