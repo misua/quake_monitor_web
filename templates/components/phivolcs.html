@@ -77,10 +77,10 @@
                             fillOpacity: 0.8
                         }).addTo(map);
                         
-                        var popupContent = '<div style="min-width: 150px;">' +
-                            '<div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">Magnitude ' + magnitude + '</div>' +
-                            '<div style="margin-bottom: 4px;">' + (location.length > 40 ? location.substring(0, 40) + '...' : location) + '</div>' +
-                            '<div style="font-size: 11px; opacity: 0.7;">' + datetime + '</div>' +
+                        var popupContent = '<div style="min-width: 150px; color: #000;">' +
+                            '<div style="font-weight: bold; font-size: 14px; margin-bottom: 4px; color: #000;">Magnitude ' + magnitude + '</div>' +
+                            '<div style="margin-bottom: 4px; color: #000;">' + (location.length > 40 ? location.substring(0, 40) + '...' : location) + '</div>' +
+                            '<div style="font-size: 11px; opacity: 0.7; color: #333;">' + datetime + '</div>' +
                             '</div>';
                         
                         marker.bindPopup(popupContent).openPopup();
