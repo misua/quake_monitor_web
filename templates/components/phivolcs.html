@@ -64,6 +64,10 @@
                         }).addTo(map);
                         
                         // Add marker for the earthquake
+                        var magnitude = '{{ earthquakes[0].magnitude }}';
+                        var location = '{{ earthquakes[0].location|replace("'", "\\'") }}';
+                        var datetime = '{{ earthquakes[0].datetime }}';
+                        
                         var marker = L.circleMarker([{{ earthquakes[0].latitude }}, {{ earthquakes[0].longitude }}], {
                             radius: 10,
                             fillColor: '{% if earthquakes[0].magnitude|float >= 6.0 %}#ef4444{% elif earthquakes[0].magnitude|float >= 4.0 %}#f97316{% else %}#22c55e{% endif %}',
@@ -73,7 +77,13 @@
                             fillOpacity: 0.8
                         }).addTo(map);
                         
-                        marker.bindPopup('<b>M{{ earthquakes[0].magnitude }}</b><br>{{ earthquakes[0].location[:30] }}<br><small>{{ earthquakes[0].datetime }}</small>').openPopup();
+                        var popupContent = '<div style="min-width: 150px;">' +
+                            '<div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">Magnitude ' + magnitude + '</div>' +
+                            '<div style="margin-bottom: 4px;">' + (location.length > 40 ? location.substring(0, 40) + '...' : location) + '</div>' +
+                            '<div style="font-size: 11px; opacity: 0.7;">' + datetime + '</div>' +
+                            '</div>';
+                        
+                        marker.bindPopup(popupContent).openPopup();
                     }
                 })();
             </script>
