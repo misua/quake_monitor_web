@@ -171,17 +171,17 @@
         <h4 class="text-xs font-bold opacity-75 mb-2">🌊 TIDE SCHEDULE</h4>
         <div class="grid grid-cols-2 gap-2">
             {% if tide.next_high %}
-            <div class="p-2 rounded bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700">
-                <div class="text-xs text-blue-700 dark:text-blue-300 mb-1">High Tide</div>
-                <div class="font-bold text-sm text-blue-900 dark:text-blue-100">{{ tide.next_high.time }}</div>
-                <div class="text-xs text-blue-700 dark:text-blue-300">{{ tide.next_high.height }}</div>
+            <div class="p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
+                <div class="text-xs opacity-60 mb-1">High Tide</div>
+                <div class="font-bold text-sm">{{ tide.next_high.time }}</div>
+                <div class="text-xs opacity-75">{{ tide.next_high.height }}</div>
             </div>
             {% endif %}
             {% if tide.next_low %}
-            <div class="p-2 rounded bg-orange-100 dark:bg-orange-900/30 border border-orange-300 dark:border-orange-700">
-                <div class="text-xs text-orange-700 dark:text-orange-300 mb-1">Low Tide</div>
-                <div class="font-bold text-sm text-orange-900 dark:text-orange-100">{{ tide.next_low.time }}</div>
-                <div class="text-xs text-orange-700 dark:text-orange-300">{{ tide.next_low.height }}</div>
+            <div class="p-2 rounded bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
+                <div class="text-xs opacity-60 mb-1">Low Tide</div>
+                <div class="font-bold text-sm">{{ tide.next_low.time }}</div>
+                <div class="text-xs opacity-75">{{ tide.next_low.height }}</div>
             </div>
             {% endif %}
         </div>
