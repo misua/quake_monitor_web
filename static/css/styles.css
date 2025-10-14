@@ -387,10 +387,14 @@ body.night-mode .text-red-300 {
 }
 
 /* Leaflet map popup text - always dark on light background */
-.leaflet-popup-content,
-.leaflet-popup-content * {
-    color: #1f2937 !important;
-    font-size: 13px !important;
+.leaflet-popup-content {
+    color: #000000 !important;
+}
+
+.leaflet-popup-content *,
+.leaflet-popup-content div,
+.leaflet-popup-content span {
+    color: #000000 !important;
 }
 
 .leaflet-popup-content b,
@@ -408,9 +412,15 @@ body.night-mode .text-red-300 {
     line-height: 1.4 !important;
 }
 
-body.night-mode .leaflet-popup-content,
-body.night-mode .leaflet-popup-content * {
-    color: #1f2937 !important;
+/* Force dark text in night mode too - popup background is always white */
+body.night-mode .leaflet-popup-content {
+    color: #000000 !important;
+}
+
+body.night-mode .leaflet-popup-content *,
+body.night-mode .leaflet-popup-content div,
+body.night-mode .leaflet-popup-content span {
+    color: #000000 !important;
 }
 
 body.night-mode .leaflet-popup-content b,
