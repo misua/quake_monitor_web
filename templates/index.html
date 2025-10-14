@@ -72,22 +72,25 @@
                 </div>
             </div>
             
-            <!-- Top 5 Earthquake Clusters -->
-            <div id="top5-panel" 
-                 hx-get="/api/earthquakes/top5" 
-                 hx-trigger="load, every 60s"
-                 hx-swap="innerHTML"
-                 class="panel-container">
-                <div class="loading text-xs">Loading...</div>
-            </div>
-            
-            <!-- Latest Earthquake - Large Display -->
-            <div id="latest-earthquake-panel" 
-                 hx-get="/api/earthquakes/latest" 
-                 hx-trigger="load, every 30s"
-                 hx-swap="innerHTML"
-                 class="panel-container">
-                <div class="loading text-xs">Loading...</div>
+            <!-- Top 5 and Latest Earthquake in Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                <!-- Top 5 Earthquake Clusters -->
+                <div id="top5-panel" 
+                     hx-get="/api/earthquakes/top5" 
+                     hx-trigger="load, every 60s"
+                     hx-swap="innerHTML"
+                     class="panel-container">
+                    <div class="loading text-xs">Loading...</div>
+                </div>
+                
+                <!-- Latest Earthquake - Large Display -->
+                <div id="latest-earthquake-panel" 
+                     hx-get="/api/earthquakes/latest" 
+                     hx-trigger="load, every 30s"
+                     hx-swap="innerHTML"
+                     class="panel-container">
+                    <div class="loading text-xs">Loading...</div>
+                </div>
             </div>
         </div>
     </div>
