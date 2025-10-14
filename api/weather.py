@@ -30,8 +30,13 @@ LOCATION_NAME = "Davao City, Philippines"
 async def get_weather(request: Request):
     """Get weather data and render component"""
     try:
+        # Import typhoon and rainfall functions
+        from pagasa_monitor import get_typhoon_status, fetch_rainfall_data
+        
         weather_data = fetch_weather_data()
         air_quality_data = fetch_air_quality_data()
+        typhoon_data = get_typhoon_status()
+        rainfall_data = fetch_rainfall_data()
         
         if not weather_data:
             return templates.TemplateResponse(
@@ -51,6 +56,8 @@ async def get_weather(request: Request):
                 "request": request,
                 "weather": weather_data,
                 "air_quality": air_quality_data,
+                "typhoon": typhoon_data,
+                "rainfall": rainfall_data,
                 "location": LOCATION_NAME
             }
         )

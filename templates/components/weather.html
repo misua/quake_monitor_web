@@ -228,17 +228,56 @@
     </div>
     {% endif %}
     
-    <!-- Compact Legend / Reference Guide -->
-    <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-        <div class="text-xs opacity-50">
-            <div class="font-semibold mb-1 opacity-75">Reference & Health Thresholds</div>
-            <div class="flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-tight">
-                <span><b>AQI:</b> Air Quality (0-500)</span>
-                <span><b>PM2.5/10:</b> Particles &lt;2.5/10um</span>
-                <span class="text-green-500">Good: 0-50</span>
-                <span class="text-yellow-500">Moderate: 51-100</span>
-                <span class="text-orange-500">Unhealthy: 101-150</span>
-                <span class="text-red-500">Very Unhealthy: 151+</span>
+    <!-- Typhoon & Rainfall Section -->
+    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Typhoon Status -->
+            <div>
+                <h4 class="text-sm font-bold mb-2 text-yellow-500">🌀 TYPHOON STATUS</h4>
+                {% if typhoon %}
+                    {% if typhoon.active %}
+                    <div class="p-2 rounded bg-red-100 dark:bg-red-900 border border-red-500">
+                        <div class="font-bold text-base">{{ typhoon.name }}</div>
+                        <div class="text-sm mt-1 space-y-0.5">
+                            <div><span class="opacity-75">Category:</span> {{ typhoon.category }}</div>
+                            <div><span class="opacity-75">Wind Speed:</span> {{ typhoon.wind_speed }} km/h</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3 text-green-500 text-sm">✓ No active typhoon</div>
+                    {% endif %}
+                {% else %}
+                <div class="text-center py-3 text-sm opacity-50">No data available</div>
+                {% endif %}
+                <div class="text-xs opacity-30 mt-1 italic">PAGASA</div>
+            </div>
+            
+            <!-- Rainfall Monitor -->
+            <div>
+                <h4 class="text-sm font-bold mb-2 text-yellow-500">🌧️ RAINFALL MONITOR</h4>
+                {% if rainfall %}
+                <div class="mb-2 p-2 rounded text-center text-sm font-semibold
+                    {% if rainfall.status == 'WARNING' %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300
+                    {% elif rainfall.status == 'ADVISORY' %}bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300
+                    {% else %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% endif %}">
+                    {{ rainfall.intensity }} Intensity
+                </div>
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <span class="opacity-75">Region:</span>
+                        <span class="font-semibold">{{ rainfall.region }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="opacity-75">Flood Risk:</span>
+                        <span class="font-semibold {% if rainfall.flood_risk == 'High' %}text-red-500{% elif rainfall.flood_risk == 'Moderate' %}text-orange-500{% else %}text-green-500{% endif %}">
+                            {{ rainfall.flood_risk }}
+                        </span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-3 text-sm opacity-50">No data available</div>
+                {% endif %}
+                <div class="text-xs opacity-30 mt-1 italic">PAGASA</div>
             </div>
         </div>
     </div>

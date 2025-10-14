@@ -1,101 +1,101 @@
-<div class="panel p-2">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <!-- Left: PHIVOLCS Tsunami Warnings -->
-        <div class="sm:border-r border-gray-300 dark:border-gray-700 sm:pr-2 pb-2 sm:pb-0 border-b sm:border-b-0">
-            <h3 class="text-sm font-bold text-yellow-500 mb-1.5">⚠️ TSUNAMI ALERTS</h3>
-            
-            {% if warnings and warnings[0].magnitude %}
-            <div class="space-y-1.5">
-                {% for warning in warnings[:2] %}
-                <div class="flex gap-1.5 items-start pb-1.5 {% if not loop.last %}border-b border-gray-300 dark:border-gray-600{% endif %}">
-                    <!-- Advisory Badge -->
-                    <div class="flex-shrink-0 w-8 h-8 rounded flex items-center justify-center font-bold text-white text-sm
-                        {% if '3' in warning.advisory or 'high' in warning.advisory.lower() %}bg-red-500
-                        {% elif '2' in warning.advisory or 'moderate' in warning.advisory.lower() %}bg-orange-500
-                        {% elif '1' in warning.advisory or 'low' in warning.advisory.lower() %}bg-yellow-500
-                        {% else %}bg-green-500{% endif %}">
-                        {% if '3' in warning.advisory %}3
-                        {% elif '2' in warning.advisory %}2
-                        {% elif '1' in warning.advisory %}1
-                        {% else %}0{% endif %}
-                    </div>
-                    
-                    <!-- Info -->
-                    <div class="flex-1 text-xs">
-                        <div class="font-semibold">M{{ warning.magnitude }}</div>
-                        <div class="text-green-600 dark:text-green-400" style="color: #4ade80 !important;">{{ warning.location[:25] }}{% if warning.location|length > 25 %}...{% endif %}</div>
-                        <div class="opacity-75">{{ warning.datetime }}</div>
-                    </div>
-                </div>
-                {% endfor %}
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+    <!-- Left: Sea Level / Tsunami Prediction -->
+    <div class="panel p-3">
+        <div class="flex justify-between items-start mb-2">
+            <h3 class="text-base font-bold text-yellow-500">🌊 TSUNAMI PREDICTION</h3>
+            <!-- Status Badge -->
+            <div class="w-12 h-12 rounded flex items-center justify-center font-bold text-white text-lg
+                {% if sea_level.status == 'CRITICAL' %}bg-red-500
+                {% elif sea_level.status == 'WARNING' %}bg-yellow-500
+                {% else %}bg-green-500{% endif %}">
+                {% if sea_level.status == 'CRITICAL' %}!!!
+                {% elif sea_level.status == 'WARNING' %}!
+                {% else %}✓{% endif %}
             </div>
-            
-            <!-- Compact Legend -->
-            <div class="mt-2 pt-1.5 border-t border-gray-300 dark:border-gray-700 text-xs">
-                <div class="space-y-0.5">
-                    <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded"></span><span>0 = None</span></div>
-                    <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-yellow-500 rounded"></span><span>1 = Minor</span></div>
-                    <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-orange-500 rounded"></span><span>2 = Moderate</span></div>
-                    <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-red-500 rounded"></span><span>3 = Major</span></div>
-                </div>
-            </div>
-            
-            <div class="text-xs opacity-30 mt-1 italic">PHIVOLCS</div>
-            {% else %}
-            <div class="text-center py-6 text-green-500 text-sm">✓ No active warnings</div>
-            {% endif %}
         </div>
         
-        <!-- Right: Sea Level Monitor -->
-        <div class="pl-2">
-            <div class="flex justify-between items-start mb-1.5">
-                <h3 class="text-sm font-bold text-yellow-500">🌊 TSUNAMI PREDICTION</h3>
-                <!-- Status Badge -->
-                <div class="w-8 h-8 rounded flex items-center justify-center font-bold text-white text-sm
-                    {% if sea_level.status == 'CRITICAL' %}bg-red-500
-                    {% elif sea_level.status == 'WARNING' %}bg-yellow-500
-                    {% else %}bg-green-500{% endif %}">
-                    {% if sea_level.status == 'CRITICAL' %}!!!
-                    {% elif sea_level.status == 'WARNING' %}!
-                    {% else %}✓{% endif %}
-                </div>
-            </div>
-            
-            <!-- Water Level -->
-            <div class="mb-1.5">
-                <div class="text-xs opacity-75">Level</div>
-                <div class="text-xl font-bold">{{ "%.2f"|format(sea_level.level) if sea_level.level else 'N/A' }}m</div>
-            </div>
-            
-            <!-- Status & Trend -->
-            <div class="mb-1.5 p-1.5 rounded text-xs
-                {% if sea_level.status == 'CRITICAL' %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300
-                {% elif sea_level.status == 'WARNING' %}bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300
-                {% else %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% endif %}">
-                <div class="font-semibold">
-                    {% if sea_level.status == 'CRITICAL' %}CRITICAL
-                    {% elif sea_level.status == 'WARNING' %}WARNING
-                    {% elif sea_level.status == 'NORMAL' %}Normal
-                    {% else %}Checking{% endif %}
-                </div>
-                <div class="opacity-75">
-                    {% if sea_level.trend == 'RISING' %}↗ Rising
-                    {% elif sea_level.trend == 'FALLING' %}↘ Falling
-                    {% elif sea_level.trend == 'STABLE' %}→ Stable
-                    {% else %}- Unknown{% endif %}
-                </div>
-            </div>
-            
-            <!-- Compact Legend -->
-            <div class="border-t border-gray-300 dark:border-gray-700 pt-1.5 mt-1.5 text-xs">
-                <div class="space-y-0.5">
-                    <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded"></span><span>Normal</span></div>
-                    <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-yellow-500 rounded"></span><span>Warning</span></div>
-                    <div class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-red-500 rounded"></span><span>Critical</span></div>
-                </div>
-            </div>
-            
-            <div class="text-xs opacity-30 mt-1 italic">IOC-sealevel</div>
+        <!-- Water Level - LARGE -->
+        <div class="mb-3">
+            <div class="text-sm opacity-75 mb-1">Current Sea Level</div>
+            <div class="text-5xl sm:text-6xl font-black">{{ "%.2f"|format(sea_level.level) if sea_level.level else 'N/A' }}<span class="text-3xl">m</span></div>
         </div>
+        
+        <!-- Status & Trend - LARGER and MORE PROMINENT -->
+        <div class="mb-6 p-4 rounded text-center
+            {% if sea_level.status == 'CRITICAL' %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300
+            {% elif sea_level.status == 'WARNING' %}bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300
+            {% else %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% endif %}">
+            <div class="font-black text-2xl sm:text-3xl mb-2">
+                {% if sea_level.status == 'CRITICAL' %}⚠️ CRITICAL ALERT
+                {% elif sea_level.status == 'WARNING' %}⚠️ WARNING
+                {% elif sea_level.status == 'NORMAL' %}✓ NORMAL CONDITIONS
+                {% else %}MONITORING...{% endif %}
+            </div>
+            <div class="text-lg font-bold">
+                Trend: 
+                {% if sea_level.trend == 'RISING' %}<span>↗ Rising</span>
+                {% elif sea_level.trend == 'FALLING' %}<span>↘ Falling</span>
+                {% elif sea_level.trend == 'STABLE' %}<span>→ Stable</span>
+                {% else %}<span>- Unknown</span>{% endif %}
+            </div>
+        </div>
+        
+        <!-- Legend - Moved to bottom -->
+        <div class="mt-auto pt-3 border-t border-gray-300 dark:border-gray-700 text-xs opacity-60">
+            <div class="space-y-0.5">
+                <div class="flex items-center gap-2"><span class="w-2 h-2 bg-green-500 rounded"></span><span>Normal - Safe</span></div>
+                <div class="flex items-center gap-2"><span class="w-2 h-2 bg-yellow-500 rounded"></span><span>Warning - Monitor</span></div>
+                <div class="flex items-center gap-2"><span class="w-2 h-2 bg-red-500 rounded"></span><span>Critical - Evacuate!</span></div>
+            </div>
+        </div>
+        
+        <div class="text-xs opacity-30 mt-1 italic">IOC Sea Level Monitoring</div>
+    </div>
+    
+    <!-- Right: PHIVOLCS Tsunami Alerts -->
+    <div class="panel p-3">
+        <h3 class="text-base font-bold text-yellow-500 mb-2">⚠️ TSUNAMI ALERTS</h3>
+            
+        {% if warnings and warnings[0].magnitude %}
+        <div class="space-y-2">
+            {% for warning in warnings[:3] %}
+            <div class="flex gap-2 items-start p-2 rounded bg-gray-50 dark:bg-gray-800 {% if not loop.last %}border-b border-gray-300 dark:border-gray-600{% endif %}">
+                <!-- Advisory Badge - LARGER -->
+                <div class="flex-shrink-0 w-12 h-12 rounded flex items-center justify-center font-bold text-white text-xl
+                    {% if '3' in warning.advisory or 'high' in warning.advisory.lower() %}bg-red-500
+                    {% elif '2' in warning.advisory or 'moderate' in warning.advisory.lower() %}bg-orange-500
+                    {% elif '1' in warning.advisory or 'low' in warning.advisory.lower() %}bg-yellow-500
+                    {% else %}bg-green-500{% endif %}">
+                    {% if '3' in warning.advisory %}3
+                    {% elif '2' in warning.advisory %}2
+                    {% elif '1' in warning.advisory %}1
+                    {% else %}0{% endif %}
+                </div>
+                
+                <!-- Info - LARGER TEXT -->
+                <div class="flex-1 text-sm">
+                    <div class="font-bold text-base">Magnitude {{ warning.magnitude }}</div>
+                    <div class="text-green-600 dark:text-green-400 font-semibold">{{ warning.location[:35] }}{% if warning.location|length > 35 %}...{% endif %}</div>
+                    <div class="opacity-75 text-xs mt-1">{{ warning.datetime }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Legend - LARGER -->
+        <div class="mt-3 pt-2 border-t border-gray-300 dark:border-gray-700 text-sm">
+            <div class="font-semibold mb-2">Advisory Levels:</div>
+            <div class="space-y-1">
+                <div class="flex items-center gap-2"><span class="w-3 h-3 bg-green-500 rounded font-bold text-white text-xs flex items-center justify-center">0</span><span>No threat</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 bg-yellow-500 rounded font-bold text-white text-xs flex items-center justify-center">1</span><span>Minor - Stay alert</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 bg-orange-500 rounded font-bold text-white text-xs flex items-center justify-center">2</span><span>Moderate - Prepare to evacuate</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 bg-red-500 rounded font-bold text-white text-xs flex items-center justify-center">3</span><span>Major - Evacuate NOW!</span></div>
+            </div>
+        </div>
+        
+        <div class="text-xs opacity-30 mt-2 italic">PHIVOLCS Tsunami Monitoring</div>
+        {% else %}
+        <div class="text-center py-8 text-green-500 text-base font-semibold">✓ No Active Tsunami Warnings</div>
+        {% endif %}
     </div>
 </div>
