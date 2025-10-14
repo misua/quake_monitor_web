@@ -23,6 +23,9 @@
                 <div class="text-xs opacity-60 mb-1">Current Temp</div>
                 <div class="text-5xl font-bold leading-none">{{ "%.0f"|format(weather.current.temperature_2m) }}°</div>
                 <div class="text-xs opacity-60 mt-1">Feels {{ "%.0f"|format(weather.current.apparent_temperature) }}°</div>
+                <div class="text-xs opacity-30 mt-1">
+                    <span id="current-datetime"></span>
+                </div>
             </div>
         </div>
         <!-- Weather Icon -->
@@ -340,3 +343,28 @@
     <div class="text-center py-8">No weather data available</div>
     {% endif %}
 </div>
+
+<script>
+function updateDateTime() {
+    const now = new Date();
+    const options = { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    };
+    const dateTimeStr = now.toLocaleString('en-US', options);
+    const elem = document.getElementById('current-datetime');
+    if (elem) {
+        elem.textContent = dateTimeStr;
+    }
+}
+
+// Update immediately and then every second
+updateDateTime();
+setInterval(updateDateTime, 1000);
+</script>
