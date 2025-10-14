@@ -1,29 +1,21 @@
 #!/usr/bin/env python3
 """
 Tide Monitor Module
-Fetches tide data (high/low tide) from Stormglass.io API
+Scrapes tide data (high/low tide) from tide-forecast.com
 """
 
 import requests
-import os
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv()
+from bs4 import BeautifulSoup
 
 # Configuration
-STORMGLASS_API_KEY = os.getenv('STORMGLASS_API_KEY', '')
-STORMGLASS_BASE_URL = "https://api.stormglass.io/v2/tide/extremes/point"
-
-# Davao City coordinates
-LATITUDE = float(os.getenv('LATITUDE', 7.190708))
-LONGITUDE = float(os.getenv('LONGITUDE', 125.455338))
+TIDE_FORECAST_URL = "https://www.tide-forecast.com/locations/Davao-Philippines/tides/latest"
 
 # Cache settings - persistent JSON file
 CACHE_FILE = Path(__file__).parent / '.tide_cache.json'
-CACHE_DURATION = 12 * 3600  # Cache for 12 hours (only 2 API calls per day)
+CACHE_DURATION = 6 * 3600  # Cache for 6 hours
 
 
 def load_cache():
@@ -57,7 +49,7 @@ def save_cache(data):
 
 def fetch_tide_data():
     """
-    Fetch tide data from Stormglass.io
+    Scrape tide data from tide-forecast.com
     Returns next high and low tides
     """
     # Check persistent cache first
@@ -65,73 +57,74 @@ def fetch_tide_data():
     if cached_data:
         return cached_data
     
-    if not STORMGLASS_API_KEY:
-        return {
-            'error': 'No API key configured',
-            'next_high': None,
-            'next_low': None
-        }
-    
     try:
-        # Get tide data for next 24 hours
-        start = datetime.utcnow()
-        end = start + timedelta(days=1)
-        
-        params = {
-            'lat': LATITUDE,
-            'lng': LONGITUDE,
-            'start': start.isoformat(),
-            'end': end.isoformat()
-        }
-        
+        # Fetch the webpage
         headers = {
-            'Authorization': STORMGLASS_API_KEY
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
-        
-        response = requests.get(
-            STORMGLASS_BASE_URL,
-            params=params,
-            headers=headers,
-            timeout=10
-        )
+        response = requests.get(TIDE_FORECAST_URL, headers=headers, timeout=10)
         response.raise_for_status()
         
-        data = response.json()
+        # Parse HTML
+        soup = BeautifulSoup(response.text, 'html.parser')
         
-        if 'data' not in data:
+        # Find tide table
+        tide_table = soup.find('table', class_='tide-day-tides')
+        if not tide_table:
             return {
-                'error': 'Invalid response',
+                'error': 'Could not find tide table',
                 'next_high': None,
                 'next_low': None
             }
         
-        # Parse tide extremes
-        extremes = data['data']
-        from datetime import timezone
-        now = datetime.now(timezone.utc)
-        
         next_high = None
         next_low = None
+        now = datetime.now()
         
-        for extreme in extremes:
-            tide_time = datetime.fromisoformat(extreme['time'].replace('Z', '+00:00'))
+        # Parse tide rows
+        rows = tide_table.find_all('tr')[1:]  # Skip header row
+        for row in rows:
+            cells = row.find_all('td')
+            if len(cells) < 3:
+                continue
             
-            # Only consider future tides
-            if tide_time > now:
-                if extreme['type'] == 'high' and not next_high:
+            # Extract tide type, time, and height
+            tide_type = cells[0].get_text(strip=True)
+            time_cell = cells[1].find('b')
+            height_cell = cells[2].find('b', class_='js-two-units-length-value__primary')
+            
+            if not time_cell or not height_cell:
+                continue
+            
+            time_str = time_cell.get_text(strip=True)
+            height_str = height_cell.get_text(strip=True)
+            
+            # Parse time (format: "12:34 AM" or "1:23 PM")
+            try:
+                tide_time = datetime.strptime(time_str, '%I:%M %p').replace(
+                    year=now.year, month=now.month, day=now.day
+                )
+                
+                # Only consider future tides
+                if tide_time < now:
+                    continue
+                
+                if 'High' in tide_type and not next_high:
                     next_high = {
-                        'time': tide_time.strftime('%I:%M %p'),
-                        'height': f"{extreme['height']:.2f}m"
+                        'time': time_str,
+                        'height': height_str
                     }
-                elif extreme['type'] == 'low' and not next_low:
+                elif 'Low' in tide_type and not next_low:
                     next_low = {
-                        'time': tide_time.strftime('%I:%M %p'),
-                        'height': f"{extreme['height']:.2f}m"
+                        'time': time_str,
+                        'height': height_str
                     }
-            
-            # Stop when we have both
-            if next_high and next_low:
-                break
+                
+                # Stop when we have both
+                if next_high and next_low:
+                    break
+            except ValueError:
+                continue
         
         result = {
             'next_high': next_high,
