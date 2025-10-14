@@ -165,10 +165,39 @@
         {% endif %}
     </div>
     
+    <!-- Tide Information -->
+    {% if tide and (tide.next_high or tide.next_low) %}
+    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <h4 class="text-xs font-bold opacity-75 mb-2">🌊 TIDE SCHEDULE</h4>
+        <div class="grid grid-cols-2 gap-2">
+            {% if tide.next_high %}
+            <div class="p-2 rounded bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700">
+                <div class="text-xs text-blue-700 dark:text-blue-300 mb-1">High Tide</div>
+                <div class="font-bold text-sm text-blue-900 dark:text-blue-100">{{ tide.next_high.time }}</div>
+                <div class="text-xs text-blue-700 dark:text-blue-300">{{ tide.next_high.height }}</div>
+            </div>
+            {% endif %}
+            {% if tide.next_low %}
+            <div class="p-2 rounded bg-orange-100 dark:bg-orange-900/30 border border-orange-300 dark:border-orange-700">
+                <div class="text-xs text-orange-700 dark:text-orange-300 mb-1">Low Tide</div>
+                <div class="font-bold text-sm text-orange-900 dark:text-orange-100">{{ tide.next_low.time }}</div>
+                <div class="text-xs text-orange-700 dark:text-orange-300">{{ tide.next_low.height }}</div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="text-xs opacity-30 mt-1 italic">Stormglass.io</div>
+    </div>
+    {% endif %}
+    
     <!-- 6-Hour Forecast -->
     {% if weather.hourly and weather.hourly.time %}
     <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-        <!-- Forecast Summary at top -->
+        <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-bold opacity-75">NEXT 6 HOURS</h4>
+            <span class="text-xs opacity-50">Davao City</span>
+        </div>
+        
+        <!-- Forecast Summary - Dynamic based on rain probability -->
         {% set max_precip = weather.hourly.precipitation_probability[1:7]|max %}
         <div class="mb-2 text-sm font-bold text-center py-1 rounded {% if max_precip >= 70 %}bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300{% elif max_precip >= 40 %}bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400{% else %}bg-green-50 dark:bg-green-900/50 text-green-600 dark:text-green-400{% endif %}">
             {% if max_precip >= 70 %}
@@ -180,34 +209,6 @@
             {% endif %}
         </div>
         
-        <!-- Tide Information -->
-        {% if tide and (tide.next_high or tide.next_low) %}
-        <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-            <h4 class="text-xs font-bold opacity-75 mb-2">🌊 TIDE SCHEDULE</h4>
-            <div class="grid grid-cols-2 gap-2">
-                {% if tide.next_high %}
-                <div class="p-2 rounded bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700">
-                    <div class="text-xs text-blue-700 dark:text-blue-300 mb-1">High Tide</div>
-                    <div class="font-bold text-sm text-blue-900 dark:text-blue-100">{{ tide.next_high.time }}</div>
-                    <div class="text-xs text-blue-700 dark:text-blue-300">{{ tide.next_high.height }}</div>
-                </div>
-                {% endif %}
-                {% if tide.next_low %}
-                <div class="p-2 rounded bg-orange-100 dark:bg-orange-900/30 border border-orange-300 dark:border-orange-700">
-                    <div class="text-xs text-orange-700 dark:text-orange-300 mb-1">Low Tide</div>
-                    <div class="font-bold text-sm text-orange-900 dark:text-orange-100">{{ tide.next_low.time }}</div>
-                    <div class="text-xs text-orange-700 dark:text-orange-300">{{ tide.next_low.height }}</div>
-                </div>
-                {% endif %}
-            </div>
-            <div class="text-xs opacity-30 mt-1 italic">Stormglass.io</div>
-        </div>
-        {% endif %}
-        
-        <div class="flex items-center justify-between mb-2 mt-3">
-            <h4 class="text-xs font-bold opacity-75">NEXT 6 HOURS</h4>
-            <span class="text-xs opacity-50">Davao City</span>
-        </div>
         <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             {% for i in range(1, 7) %}
             <div class="text-center p-1.5 rounded bg-gray-50 dark:bg-gray-800">
