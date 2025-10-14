@@ -80,7 +80,8 @@ def fetch_tide_data():
         
         # Parse tide extremes
         extremes = data['data']
-        now = datetime.utcnow()
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
         
         next_high = None
         next_low = None
