@@ -77,11 +77,10 @@ def fetch_tide_data():
                 'next_low': None
             }
         
-        next_high = None
-        next_low = None
+        tides = []
         now = datetime.now()
         
-        # Parse tide rows
+        # Parse tide rows - get all tides for today
         rows = tide_table.find_all('tr')[1:]  # Skip header row
         for row in rows:
             cells = row.find_all('td')
@@ -105,30 +104,40 @@ def fetch_tide_data():
                     year=now.year, month=now.month, day=now.day
                 )
                 
-                # Only consider future tides
-                if tide_time < now:
-                    continue
-                
-                if 'High' in tide_type and not next_high:
-                    next_high = {
-                        'time': time_str,
-                        'height': height_str
-                    }
-                elif 'Low' in tide_type and not next_low:
-                    next_low = {
-                        'time': time_str,
-                        'height': height_str
-                    }
-                
-                # Stop when we have both
-                if next_high and next_low:
-                    break
+                tides.append({
+                    'type': tide_type,
+                    'time': time_str,
+                    'height': height_str,
+                    'datetime': tide_time
+                })
             except ValueError:
                 continue
+        
+        # Find next high and low
+        next_high = None
+        next_low = None
+        for tide in tides:
+            if tide['datetime'] > now:
+                if 'High' in tide['type'] and not next_high:
+                    next_high = {
+                        'time': tide['time'],
+                        'height': tide['height']
+                    }
+                elif 'Low' in tide['type'] and not next_low:
+                    next_low = {
+                        'time': tide['time'],
+                        'height': tide['height']
+                    }
+                if next_high and next_low:
+                    break
+        
+        # Get all tides for display (remove datetime for JSON serialization)
+        all_tides = [{'type': t['type'], 'time': t['time'], 'height': t['height']} for t in tides]
         
         result = {
             'next_high': next_high,
             'next_low': next_low,
+            'all_tides': all_tides,
             'error': None
         }
         
@@ -159,20 +168,12 @@ def fetch_tide_data():
 
 def get_tide_status():
     """Get formatted tide status for display"""
-    tide_data = fetch_tide_data()
-    
-    return {
-        'next_high': tide_data.get('next_high'),
-        'next_low': tide_data.get('next_low'),
-        'error': tide_data.get('error')
-    }
+    return fetch_tide_data()
 
 
 if __name__ == "__main__":
     # Test the module
+    import json
     print("Testing Tide Monitor...")
     status = get_tide_status()
-    print(f"Next High Tide: {status['next_high']}")
-    print(f"Next Low Tide: {status['next_low']}")
-    if status['error']:
-        print(f"Error: {status['error']}")
+    print(json.dumps(status, indent=2))
