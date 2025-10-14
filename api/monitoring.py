@@ -3,6 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 import sys
 from pathlib import Path
+import requests
 
 # Add parent directory to path
 PARENT_DIR = Path(__file__).parent.parent.parent
@@ -37,8 +38,28 @@ async def get_typhoon(request: Request):
             "components/typhoon.html",
             {"request": request, "typhoon": typhoon_data}
         )
+    except requests.exceptions.ConnectionError:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "network",
+                "title": "🌀 Connection Error",
+                "message": "Cannot reach PAGASA typhoon service.",
+                "component": "Typhoon panel"
+            }
+        )
     except Exception as e:
-        return f'<div class="error">Error loading typhoon data: {str(e)}</div>'
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "general",
+                "title": "🌀 Data Error",
+                "message": "Unable to load typhoon tracking data.",
+                "component": "Typhoon panel"
+            }
+        )
 
 
 @router.get("/rainfall", response_class=HTMLResponse)
@@ -50,5 +71,25 @@ async def get_rainfall(request: Request):
             "components/rainfall.html",
             {"request": request, "rainfall": rainfall_data}
         )
+    except requests.exceptions.ConnectionError:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "network",
+                "title": "🌧️ Connection Error",
+                "message": "Cannot reach rainfall monitoring service.",
+                "component": "Rainfall panel"
+            }
+        )
     except Exception as e:
-        return f'<div class="error">Error loading rainfall data: {str(e)}</div>'
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "general",
+                "title": "🌧️ Data Error",
+                "message": "Unable to load rainfall data.",
+                "component": "Rainfall panel"
+            }
+        )

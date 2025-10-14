@@ -132,12 +132,58 @@ async def get_phivolcs_earthquakes(request: Request):
     """Get PHIVOLCS earthquake data"""
     try:
         earthquakes = fetch_phivolcs_earthquakes()
+        
+        if not earthquakes:
+            return templates.TemplateResponse(
+                "components/error.html",
+                {
+                    "request": request,
+                    "error_type": "network",
+                    "title": "🌍 PHIVOLCS Data Unavailable",
+                    "message": "Unable to connect to PHIVOLCS earthquake monitoring service. The website may be down or your internet connection may be offline.",
+                    "component": "PHIVOLCS panel"
+                }
+            )
+        
         return templates.TemplateResponse(
             "components/phivolcs.html",
             {"request": request, "earthquakes": earthquakes}
         )
+    except requests.exceptions.Timeout:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "timeout",
+                "title": "🌍 PHIVOLCS Timeout",
+                "message": "The PHIVOLCS website is taking too long to respond. Please wait while we retry.",
+                "component": "PHIVOLCS panel"
+            }
+        )
+    except requests.exceptions.ConnectionError:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "network",
+                "title": "🌍 No Internet Connection",
+                "message": "Cannot reach PHIVOLCS servers. Please check your network connection.",
+                "component": "PHIVOLCS panel"
+            }
+        )
     except Exception as e:
-        return f'<div class="error">Error loading PHIVOLCS data: {str(e)}</div>'
+        import traceback
+        traceback.print_exc()
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "general",
+                "title": "🌍 PHIVOLCS Error",
+                "message": "An error occurred while loading earthquake data from PHIVOLCS.",
+                "component": "PHIVOLCS panel"
+            }
+        )
 
 
 @router.get("/earthquakes/usgs", response_class=HTMLResponse)
@@ -145,12 +191,47 @@ async def get_usgs_earthquakes(request: Request):
     """Get USGS earthquake data"""
     try:
         earthquakes = fetch_usgs_earthquakes()
+        
+        if not earthquakes:
+            return templates.TemplateResponse(
+                "components/error.html",
+                {
+                    "request": request,
+                    "error_type": "network",
+                    "title": "🌎 USGS Data Unavailable",
+                    "message": "Unable to connect to USGS earthquake service. Please check your internet connection.",
+                    "component": "USGS panel"
+                }
+            )
+        
         return templates.TemplateResponse(
             "components/usgs.html",
             {"request": request, "earthquakes": earthquakes}
         )
+    except requests.exceptions.ConnectionError:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "network",
+                "title": "🌎 No Internet Connection",
+                "message": "Cannot reach USGS servers. Check your network.",
+                "component": "USGS panel"
+            }
+        )
     except Exception as e:
-        return f'<div class="error">Error loading USGS data: {str(e)}</div>'
+        import traceback
+        traceback.print_exc()
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "general",
+                "title": "🌎 USGS Error",
+                "message": "Error loading USGS earthquake data.",
+                "component": "USGS panel"
+            }
+        )
 
 
 @router.get("/earthquakes/top5", response_class=HTMLResponse)
@@ -162,5 +243,27 @@ async def get_top5(request: Request):
             "components/top5.html",
             {"request": request, "top5": top5}
         )
+    except requests.exceptions.ConnectionError:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "network",
+                "title": "📊 Connection Error",
+                "message": "Cannot load earthquake cluster data. Check your internet connection.",
+                "component": "Top 5 panel"
+            }
+        )
     except Exception as e:
-        return f'<div class="error">Error loading top 5 data: {str(e)}</div>'
+        import traceback
+        traceback.print_exc()
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "data",
+                "title": "📊 Data Error",
+                "message": "Unable to process earthquake cluster data.",
+                "component": "Top 5 panel"
+            }
+        )

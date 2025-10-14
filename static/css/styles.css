@@ -9,6 +9,16 @@
     --night-text: #e9ecef;
 }
 
+/* Prevent horizontal scrolling on mobile */
+* {
+    max-width: 100%;
+}
+
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
 /* Day Mode (default) */
 body {
     background-color: var(--day-bg);
@@ -91,6 +101,38 @@ body.night-mode .error {
     color: #ff6b6b;
 }
 
+/* Friendly Error Component Animations */
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel {
+    animation: fadeInError 0.3s ease-out;
+}
+
+/* Error icon pulse animation */
+@keyframes errorPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+.panel:has(.text-yellow-500) {
+    animation: fadeInError 0.3s ease-out;
+}
+
 /* HTMX Loading Indicator */
 .htmx-request .htmx-indicator {
     display: inline;
@@ -114,11 +156,71 @@ body.night-mode .error {
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .panel {
-        padding: 1rem !important;
+        padding: 0.75rem !important;
     }
     
     h2 {
-        font-size: 1.25rem !important;
+        font-size: 1.125rem !important;
+    }
+    
+    h3 {
+        font-size: 1rem !important;
+    }
+    
+    /* Reduce panel container min-height on mobile */
+    .panel-container {
+        min-height: 150px;
+    }
+    
+    /* Ensure text doesn't overflow */
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Better touch targets */
+    button, a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Smaller temperature display on mobile */
+    .text-5xl {
+        font-size: 2.5rem !important;
+    }
+    
+    .text-4xl {
+        font-size: 2rem !important;
+    }
+    
+    /* Adjust loading state for mobile */
+    .loading {
+        min-height: 150px;
+        font-size: 0.875rem;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .panel {
+        padding: 0.5rem !important;
+    }
+    
+    /* Even smaller text on very small screens */
+    .text-5xl {
+        font-size: 2rem !important;
+    }
+    
+    .text-4xl {
+        font-size: 1.75rem !important;
+    }
+    
+    /* Reduce spacing */
+    .space-y-3 > * + * {
+        margin-top: 0.5rem !important;
+    }
+    
+    .gap-3 {
+        gap: 0.5rem !important;
     }
 }
 
@@ -325,17 +427,24 @@ body.night-mode .leaflet-popup-content small {
     position: fixed;
     bottom: 20px;
     left: 20px;
+    right: 20px;
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     color: #1f2937;
-    padding: 24px 28px;
+    padding: 20px 24px;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
-    min-width: 380px;
     max-width: 480px;
     z-index: 10000;
     animation: slideInUp 0.3s ease-out;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     border: 3px solid #fcd34d;
+}
+
+@media (min-width: 640px) {
+    .toast-notification {
+        right: auto;
+        min-width: 380px;
+    }
 }
 
 .toast-notification.fade-out {

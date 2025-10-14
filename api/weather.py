@@ -3,6 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 import sys
 from pathlib import Path
+import requests
 
 # Add parent directory to path
 PARENT_DIR = Path(__file__).parent.parent.parent
@@ -33,7 +34,16 @@ async def get_weather(request: Request):
         air_quality_data = fetch_air_quality_data()
         
         if not weather_data:
-            return '<div class="panel p-6"><h2 class="text-xl font-bold mb-4 text-yellow-500">WEATHER</h2><div class="text-center py-8">Unable to fetch weather data</div></div>'
+            return templates.TemplateResponse(
+                "components/error.html",
+                {
+                    "request": request,
+                    "error_type": "network",
+                    "title": "☁️ Weather Data Unavailable",
+                    "message": "Unable to connect to Open-Meteo weather service. Please check your internet connection.",
+                    "component": "Weather panel"
+                }
+            )
         
         return templates.TemplateResponse(
             "components/weather.html",
@@ -44,7 +54,40 @@ async def get_weather(request: Request):
                 "location": LOCATION_NAME
             }
         )
+    except requests.exceptions.Timeout:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "timeout",
+                "title": "☁️ Weather Service Timeout",
+                "message": "The weather service is taking too long to respond. It may be experiencing high traffic.",
+                "component": "Weather panel"
+            }
+        )
+    except requests.exceptions.ConnectionError:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "network",
+                "title": "☁️ No Internet Connection",
+                "message": "Cannot reach the weather service. Please check your network connection and try again.",
+                "component": "Weather panel"
+            }
+        )
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return f'<div class="panel p-6"><h2 class="text-xl font-bold mb-4 text-yellow-500">WEATHER</h2><div class="error">Error: {str(e)}</div></div>'
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "general",
+                "title": "☁️ Weather Error",
+                "message": "An unexpected error occurred while loading weather data.",
+                "component": "Weather panel",
+                "details": str(e),
+                "show_details": False
+            }
+        )

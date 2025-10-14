@@ -1,8 +1,8 @@
 <div class="panel p-2">
-    <div class="grid grid-cols-2 gap-2">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <!-- Left: PHIVOLCS Tsunami Warnings -->
-        <div class="border-r border-gray-300 dark:border-gray-700 pr-2">
-            <h3 class="text-sm font-bold text-yellow-500 mb-1.5">⚠️ TSUNAMI</h3>
+        <div class="sm:border-r border-gray-300 dark:border-gray-700 sm:pr-2 pb-2 sm:pb-0 border-b sm:border-b-0">
+            <h3 class="text-sm font-bold text-yellow-500 mb-1.5">⚠️ TSUNAMI ALERTS</h3>
             
             {% if warnings and warnings[0].magnitude %}
             <div class="space-y-1.5">
@@ -49,7 +49,7 @@
         <!-- Right: Sea Level Monitor -->
         <div class="pl-2">
             <div class="flex justify-between items-start mb-1.5">
-                <h3 class="text-sm font-bold text-yellow-500">🌊 SEA LEVEL</h3>
+                <h3 class="text-sm font-bold text-yellow-500">🌊 TSUNAMI PREDICTION</h3>
                 <!-- Status Badge -->
                 <div class="w-8 h-8 rounded flex items-center justify-center font-bold text-white text-sm
                     {% if sea_level.status == 'CRITICAL' %}bg-red-500

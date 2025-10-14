@@ -152,7 +152,38 @@ async def get_tsunami_sealevel_combined(request: Request):
                 "sea_level": sea_level
             }
         )
+    except requests.exceptions.Timeout:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "timeout",
+                "title": "🌊 Service Timeout",
+                "message": "Tsunami and sea level services are taking too long to respond. Retrying...",
+                "component": "Tsunami & Sea Level panel"
+            }
+        )
+    except requests.exceptions.ConnectionError:
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "network",
+                "title": "🌊 No Internet Connection",
+                "message": "Cannot reach tsunami monitoring services. Please check your network connection.",
+                "component": "Tsunami & Sea Level panel"
+            }
+        )
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return f'<div class="panel p-4"><div class="error">Error loading data: {str(e)}</div></div>'
+        return templates.TemplateResponse(
+            "components/error.html",
+            {
+                "request": request,
+                "error_type": "general",
+                "title": "🌊 Data Error",
+                "message": "Unable to load tsunami and sea level monitoring data.",
+                "component": "Tsunami & Sea Level panel"
+            }
+        )

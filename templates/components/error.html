@@ -1,0 +1,57 @@
+<div class="panel p-4 sm:p-6">
+    <div class="flex flex-col items-center justify-center py-6 sm:py-8 text-center">
+        <!-- Error Icon -->
+        <div class="text-5xl sm:text-6xl mb-4">
+            {% if error_type == 'network' %}
+                📡
+            {% elif error_type == 'timeout' %}
+                ⏱️
+            {% elif error_type == 'data' %}
+                📊
+            {% else %}
+                ⚠️
+            {% endif %}
+        </div>
+        
+        <!-- Error Title -->
+        <h3 class="text-lg sm:text-xl font-bold mb-2 text-yellow-500">
+            {% if title %}
+                {{ title }}
+            {% else %}
+                Connection Issue
+            {% endif %}
+        </h3>
+        
+        <!-- Error Message -->
+        <p class="text-sm sm:text-base opacity-75 mb-4 max-w-md">
+            {% if message %}
+                {{ message }}
+            {% elif error_type == 'network' %}
+                Unable to connect to the data source. Please check your internet connection.
+            {% elif error_type == 'timeout' %}
+                The request took too long to complete. The service might be experiencing delays.
+            {% elif error_type == 'data' %}
+                No data available at the moment. The service may be updating.
+            {% else %}
+                Something went wrong while loading this data.
+            {% endif %}
+        </p>
+        
+        <!-- Retry Info -->
+        <div class="text-xs opacity-50 italic">
+            {% if component %}
+                {{ component }} will retry automatically...
+            {% else %}
+                Retrying automatically...
+            {% endif %}
+        </div>
+        
+        <!-- Optional Details (for debugging) -->
+        {% if details and show_details %}
+        <details class="mt-4 text-xs opacity-40 max-w-md">
+            <summary class="cursor-pointer hover:opacity-60">Technical Details</summary>
+            <pre class="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-left overflow-x-auto">{{ details }}</pre>
+        </details>
+        {% endif %}
+    </div>
+</div>
