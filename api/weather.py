@@ -4,6 +4,8 @@ from fastapi.responses import HTMLResponse
 import sys
 from pathlib import Path
 import requests
+from datetime import datetime
+import pytz
 
 # Add parent directory to path
 PARENT_DIR = Path(__file__).parent.parent.parent
@@ -30,8 +32,23 @@ LOCATION_NAME = "Davao City, Philippines"
 async def get_weather(request: Request):
     """Get weather data and render component"""
     try:
+        # Add parent directory to path for imports
+        PARENT_DIR = Path(__file__).parent.parent.parent
+        sys.path.insert(0, str(PARENT_DIR))
+        
+        # Import typhoon, rainfall, and tide functions
+        from pagasa_monitor import get_typhoon_status, fetch_rainfall_data
+        from tide_monitor import get_tide_status
+        
         weather_data = fetch_weather_data()
         air_quality_data = fetch_air_quality_data()
+        typhoon_data = get_typhoon_status()
+        rainfall_data = fetch_rainfall_data()
+        tide_data = get_tide_status()
+        
+        # Get current hour in Manila timezone for hourly forecast
+        manila_tz = pytz.timezone('Asia/Manila')
+        current_hour = datetime.now(manila_tz).hour
         
         if not weather_data:
             return templates.TemplateResponse(
@@ -51,7 +68,11 @@ async def get_weather(request: Request):
                 "request": request,
                 "weather": weather_data,
                 "air_quality": air_quality_data,
-                "location": LOCATION_NAME
+                "typhoon": typhoon_data,
+                "rainfall": rainfall_data,
+                "tide": tide_data,
+                "location": LOCATION_NAME,
+                "current_hour": current_hour
             }
         )
     except requests.exceptions.Timeout:

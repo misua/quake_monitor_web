@@ -63,8 +63,15 @@ uvicorn app:app --reload --host 0.0.0.0 --port 8000
 
 ### Production Mode
 
+Single worker (recommended):
 ```bash
-uvicorn app:app --host 0.0.0.0 --port 8000 --workers 4
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+Multiple workers (requires gunicorn):
+```bash
+pip install gunicorn
+gunicorn app:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```
 
 ### Access the Dashboard

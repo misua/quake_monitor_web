@@ -23,6 +23,9 @@
                 <div class="text-xs opacity-60 mb-1">Current Temp</div>
                 <div class="text-5xl font-bold leading-none">{{ "%.0f"|format(weather.current.temperature_2m) }}°</div>
                 <div class="text-xs opacity-60 mt-1">Feels {{ "%.0f"|format(weather.current.apparent_temperature) }}°</div>
+                <div class="text-xs opacity-30 mt-1">
+                    <span id="current-datetime"></span>
+                </div>
             </div>
         </div>
         <!-- Weather Icon -->
@@ -165,11 +168,72 @@
         {% endif %}
     </div>
     
+    <!-- Tide & Sun Information -->
+    {% if tide and tide.all_tides %}
+    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div class="grid grid-cols-2 gap-3 text-xs">
+            <!-- Tides Column -->
+            <div>
+                <div class="font-semibold opacity-75 mb-1.5">🌊 Tides Today</div>
+                <div class="space-y-1">
+                    {% for t in tide.all_tides %}
+                    <div class="flex justify-between items-center px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">
+                        <span class="opacity-60">{% if 'High' in t.type %}High{% else %}Low{% endif %}</span>
+                        <span class="font-semibold">{{ t.time }}</span>
+                        <span class="opacity-50">{{ t.height }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Sun Column -->
+            {% if weather.daily and weather.daily.sunrise and weather.daily.sunset %}
+            <div>
+                <div class="font-semibold opacity-75 mb-1.5">☀️ Sun Today</div>
+                <div class="space-y-1">
+                    {% set sunrise_time = weather.daily.sunrise[0].split('T')[1][:5] %}
+                    {% set sunrise_hour = sunrise_time.split(':')[0]|int %}
+                    <div class="flex justify-between items-center px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">
+                        <span class="opacity-60">Sunrise</span>
+                        <span class="font-semibold">
+                            {% if sunrise_hour == 0 %}12:{{ sunrise_time.split(':')[1] }} AM
+                            {% elif sunrise_hour < 12 %}{{ sunrise_hour }}:{{ sunrise_time.split(':')[1] }} AM
+                            {% elif sunrise_hour == 12 %}12:{{ sunrise_time.split(':')[1] }} PM
+                            {% else %}{{ sunrise_hour - 12 }}:{{ sunrise_time.split(':')[1] }} PM
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% set sunset_time = weather.daily.sunset[0].split('T')[1][:5] %}
+                    {% set sunset_hour = sunset_time.split(':')[0]|int %}
+                    <div class="flex justify-between items-center px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">
+                        <span class="opacity-60">Sunset</span>
+                        <span class="font-semibold">
+                            {% if sunset_hour == 0 %}12:{{ sunset_time.split(':')[1] }} AM
+                            {% elif sunset_hour < 12 %}{{ sunset_hour }}:{{ sunset_time.split(':')[1] }} AM
+                            {% elif sunset_hour == 12 %}12:{{ sunset_time.split(':')[1] }} PM
+                            {% else %}{{ sunset_hour - 12 }}:{{ sunset_time.split(':')[1] }} PM
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    
     <!-- 6-Hour Forecast -->
     {% if weather.hourly and weather.hourly.time %}
     <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-        <!-- Forecast Summary at top -->
-        {% set max_precip = weather.hourly.precipitation_probability[1:7]|max %}
+        <div class="flex items-center justify-between mb-2">
+            <h4 class="text-xs font-bold opacity-75">NEXT 6 HOURS</h4>
+            <span class="text-xs opacity-50">Davao City</span>
+        </div>
+        
+        <!-- Forecast Summary - Dynamic based on rain probability -->
+        {% set start_idx = current_hour + 1 %}
+        {% set end_idx = current_hour + 7 %}
+        {% set max_precip = weather.hourly.precipitation_probability[start_idx:end_idx]|max %}
         <div class="mb-2 text-sm font-bold text-center py-1 rounded {% if max_precip >= 70 %}bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300{% elif max_precip >= 40 %}bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400{% else %}bg-green-50 dark:bg-green-900/50 text-green-600 dark:text-green-400{% endif %}">
             {% if max_precip >= 70 %}
                 High chance of rain in the next 6 hours
@@ -180,15 +244,12 @@
             {% endif %}
         </div>
         
-        <div class="flex items-center justify-between mb-2">
-            <h4 class="text-xs font-bold opacity-75">NEXT 6 HOURS</h4>
-            <span class="text-xs opacity-50">Davao City</span>
-        </div>
-        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
-            {% for i in range(1, 7) %}
-            <div class="text-center p-2 rounded bg-gray-50 dark:bg-gray-800">
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+            {% for offset in range(1, 7) %}
+            {% set i = current_hour + offset %}
+            <div class="text-center p-1.5 rounded bg-gray-50 dark:bg-gray-800">
                 <!-- Time -->
-                <div class="text-xs font-semibold mb-1">
+                <div class="text-xs font-semibold mb-0.5">
                     {% set hour_str = weather.hourly.time[i].split('T')[1][:5] if 'T' in weather.hourly.time[i] else weather.hourly.time[i] %}
                     {% set hour = hour_str.split(':')[0]|int %}
                     {% if hour == 0 %}12AM
@@ -199,7 +260,7 @@
                 </div>
                 
                 <!-- Weather Icon -->
-                <div class="text-2xl mb-1">
+                <div class="text-xl mb-0.5">
                     {% set wcode = weather.hourly.weather_code[i] %}
                     {% if wcode == 0 %}☀️
                     {% elif wcode in [1, 2] %}🌤️
@@ -214,11 +275,11 @@
                 </div>
                 
                 <!-- Temperature -->
-                <div class="text-sm font-bold">{{ "%.0f"|format(weather.hourly.temperature_2m[i]) }}°</div>
+                <div class="text-xs font-bold">{{ "%.0f"|format(weather.hourly.temperature_2m[i]) }}°</div>
                 
                 <!-- Precipitation Probability -->
                 {% if weather.hourly.precipitation_probability[i] > 0 %}
-                <div class="text-xs mt-1 {% if weather.hourly.precipitation_probability[i] >= 70 %}text-blue-500{% elif weather.hourly.precipitation_probability[i] >= 40 %}text-blue-400{% else %}text-blue-300{% endif %}">
+                <div class="text-xs mt-0.5 {% if weather.hourly.precipitation_probability[i] >= 70 %}text-blue-500{% elif weather.hourly.precipitation_probability[i] >= 40 %}text-blue-400{% else %}text-blue-300{% endif %}">
                     💧{{ weather.hourly.precipitation_probability[i] }}%
                 </div>
                 {% endif %}
@@ -228,17 +289,56 @@
     </div>
     {% endif %}
     
-    <!-- Compact Legend / Reference Guide -->
-    <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-        <div class="text-xs opacity-50">
-            <div class="font-semibold mb-1 opacity-75">Reference & Health Thresholds</div>
-            <div class="flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-tight">
-                <span><b>AQI:</b> Air Quality (0-500)</span>
-                <span><b>PM2.5/10:</b> Particles &lt;2.5/10um</span>
-                <span class="text-green-500">Good: 0-50</span>
-                <span class="text-yellow-500">Moderate: 51-100</span>
-                <span class="text-orange-500">Unhealthy: 101-150</span>
-                <span class="text-red-500">Very Unhealthy: 151+</span>
+    <!-- Typhoon & Rainfall Section -->
+    <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Typhoon Status -->
+            <div>
+                <h4 class="text-sm font-bold mb-2 text-yellow-500">🌀 TYPHOON STATUS</h4>
+                {% if typhoon %}
+                    {% if typhoon.active %}
+                    <div class="p-2 rounded bg-red-100 dark:bg-red-900 border border-red-500">
+                        <div class="font-bold text-base">{{ typhoon.name }}</div>
+                        <div class="text-sm mt-1 space-y-0.5">
+                            <div><span class="opacity-75">Category:</span> {{ typhoon.category }}</div>
+                            <div><span class="opacity-75">Wind Speed:</span> {{ typhoon.wind_speed }} km/h</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3 text-green-500 text-sm">✓ No active typhoon</div>
+                    {% endif %}
+                {% else %}
+                <div class="text-center py-3 text-sm opacity-50">No data available</div>
+                {% endif %}
+                <div class="text-xs opacity-30 mt-1 italic">PAGASA</div>
+            </div>
+            
+            <!-- Rainfall Monitor -->
+            <div>
+                <h4 class="text-sm font-bold mb-2 text-yellow-500">🌧️ RAINFALL MONITOR</h4>
+                {% if rainfall %}
+                <div class="mb-2 p-2 rounded text-center text-sm font-semibold
+                    {% if rainfall.status == 'WARNING' %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300
+                    {% elif rainfall.status == 'ADVISORY' %}bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300
+                    {% else %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% endif %}">
+                    {{ rainfall.intensity }} Intensity
+                </div>
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <span class="opacity-75">Region:</span>
+                        <span class="font-semibold">{{ rainfall.region }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="opacity-75">Flood Risk:</span>
+                        <span class="font-semibold {% if rainfall.flood_risk == 'High' %}text-red-500{% elif rainfall.flood_risk == 'Moderate' %}text-orange-500{% else %}text-green-500{% endif %}">
+                            {{ rainfall.flood_risk }}
+                        </span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-3 text-sm opacity-50">No data available</div>
+                {% endif %}
+                <div class="text-xs opacity-30 mt-1 italic">PAGASA</div>
             </div>
         </div>
     </div>
@@ -246,3 +346,28 @@
     <div class="text-center py-8">No weather data available</div>
     {% endif %}
 </div>
+
+<script>
+function updateDateTime() {
+    const now = new Date();
+    const options = { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    };
+    const dateTimeStr = now.toLocaleString('en-US', options);
+    const elem = document.getElementById('current-datetime');
+    if (elem) {
+        elem.textContent = dateTimeStr;
+    }
+}
+
+// Update immediately and then every second
+updateDateTime();
+setInterval(updateDateTime, 1000);
+</script>

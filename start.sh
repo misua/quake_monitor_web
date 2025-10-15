@@ -14,7 +14,7 @@ source venv/bin/activate
 
 # Install/update dependencies
 echo "Installing dependencies..."
-pip install -q -r requirements.txt
+python -m pip install -q -r requirements.txt
 
 # Start the application
 echo "Starting web server on http://0.0.0.0:8000"

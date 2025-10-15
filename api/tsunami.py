@@ -149,7 +149,8 @@ async def get_tsunami_sealevel_combined(request: Request):
             {
                 "request": request,
                 "warnings": warnings,
-                "sea_level": sea_level
+                "sea_level": sea_level,
+                "location": "Davao City"
             }
         )
     except requests.exceptions.Timeout:

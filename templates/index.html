@@ -2,61 +2,25 @@
 
 {% block content %}
 <div class="min-h-screen p-2 sm:p-4 md:p-6">
-    <!-- Header -->
-    <header class="text-center mb-4 md:mb-6">
-        <h1 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-2">🌍 EARTHQUAKE & WEATHER MONITOR</h1>
-        <p class="text-xs sm:text-sm opacity-75">Real-time monitoring for {{ location }}</p>
-    </header>
-    
     <!-- Main Content - Compact Grid Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        <!-- Left Column -->
+        <!-- Left Column: Weather + Top5 + USGS -->
         <div class="space-y-3">
-            <!-- Weather Panel -->
+            <!-- Weather Panel with Typhoon & Rainfall -->
             <div id="weather-panel" 
                  hx-get="/api/weather" 
-                 hx-trigger="load, every 30s"
+                 hx-trigger="load, every 300s"
                  hx-swap="innerHTML"
                  class="panel-container">
                 <div class="loading">Loading weather data...</div>
             </div>
             
-            <!-- PHIVOLCS Earthquakes -->
-            <div id="phivolcs-panel" 
-                 hx-get="/api/earthquakes/phivolcs" 
-                 hx-trigger="load, every 60s"
-                 hx-swap="innerHTML"
-                 class="panel-container">
-                <div class="loading">Loading PHIVOLCS data...</div>
-            </div>
-        </div>
-        
-        <!-- Right Column -->
-        <div class="space-y-3">
-            <!-- Tsunami & Sea Level Combined Panel -->
-            <div id="tsunami-sealevel-panel" 
-                 hx-get="/api/tsunami-sealevel" 
-                 hx-trigger="load, every 300s"
-                 hx-swap="innerHTML"
-                 class="panel-container">
-                <div class="loading">Loading tsunami & sea level data...</div>
-            </div>
-            
-            <!-- USGS with Typhoon and Rainfall -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <!-- Typhoon Tracker -->
-                <div id="typhoon-panel-right" 
-                     hx-get="/api/typhoon" 
-                     hx-trigger="load, every 300s"
-                     hx-swap="innerHTML"
-                     class="panel-container">
-                    <div class="loading text-xs">Loading...</div>
-                </div>
-                
-                <!-- Rainfall Monitor -->
-                <div id="rainfall-panel-right" 
-                     hx-get="/api/rainfall" 
-                     hx-trigger="load, every 300s"
+            <!-- Top 5 & USGS (2 columns) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Top 5 Earthquakes -->
+                <div id="top5-panel" 
+                     hx-get="/api/earthquakes/top5" 
+                     hx-trigger="load, every 60s"
                      hx-swap="innerHTML"
                      class="panel-container">
                     <div class="loading text-xs">Loading...</div>
@@ -71,22 +35,114 @@
                     <div class="loading text-xs">Loading...</div>
                 </div>
             </div>
-            
-            <!-- Top 5 Earthquake Clusters -->
-            <div id="top5-panel" 
-                 hx-get="/api/earthquakes/top5" 
+        </div>
+        
+        <!-- Right Column: PHIVOLCS + Tsunami -->
+        <div class="space-y-3">
+            <!-- PHIVOLCS Earthquakes -->
+            <div id="phivolcs-panel" 
+                 hx-get="/api/earthquakes/phivolcs" 
                  hx-trigger="load, every 60s"
                  hx-swap="innerHTML"
                  class="panel-container">
-                <div class="loading text-xs">Loading...</div>
+                <div class="loading">Loading PHIVOLCS data...</div>
+            </div>
+            
+            <!-- Tsunami Prediction & Alerts (2 columns) -->
+            <div id="tsunami-sealevel-panel" 
+                 hx-get="/api/tsunami-sealevel" 
+                 hx-trigger="load, every 300s"
+                 hx-swap="innerHTML"
+                 class="panel-container">
+                <div class="loading">Loading tsunami & sea level data...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reference Guide -->
+    <div class="mt-3">
+        <div class="panel p-4 bg-gray-100 dark:bg-gray-800">
+            <h3 class="text-sm font-bold mb-3 opacity-75">📖 REFERENCE GUIDE & THRESHOLDS</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                <!-- Weather Metrics -->
+                <div>
+                    <h4 class="font-bold mb-2 text-blue-600 dark:text-blue-400">☁️ Weather Metrics</h4>
+                    <div class="space-y-1 opacity-75">
+                        <div><span class="font-semibold">Temperature:</span> Air temperature in Celsius (°C)</div>
+                        <div><span class="font-semibold">Feels Like:</span> Apparent temperature considering humidity & wind</div>
+                        <div><span class="font-semibold">Humidity:</span> Moisture content in air (0-100%)</div>
+                        <div><span class="font-semibold">Dew Point:</span> Temperature when water vapor condenses</div>
+                        <div><span class="font-semibold">Pressure:</span> Atmospheric pressure in millibars (mb)</div>
+                        <div><span class="font-semibold">Wind:</span> Wind speed in km/h</div>
+                        <div><span class="font-semibold">Visibility:</span> Clear sight distance in kilometers</div>
+                        <div><span class="font-semibold">UV Index:</span> Sun exposure risk level (0-11+)</div>
+                    </div>
+                </div>
+                
+                <!-- Air Quality -->
+                <div>
+                    <h4 class="font-bold mb-2 text-green-600 dark:text-green-400">🌫️ Air Quality</h4>
+                    <div class="space-y-1 opacity-75">
+                        <div><span class="font-semibold">AQI (Air Quality Index):</span> Overall air quality (0-500)</div>
+                        <div><span class="font-semibold">PM2.5:</span> Fine particles <2.5 micrometers (µg/m³)</div>
+                        <div><span class="font-semibold">PM10:</span> Coarse particles <10 micrometers (µg/m³)</div>
+                        <div class="mt-2 pt-2 border-t border-gray-300 dark:border-gray-600">
+                            <div class="font-semibold mb-1">Health Thresholds:</div>
+                            <div><span class="text-green-600 dark:text-green-400">●</span> Good: AQI 0-50, PM2.5 0-12</div>
+                            <div><span class="text-yellow-600 dark:text-yellow-400">●</span> Moderate: AQI 51-100, PM2.5 13-35</div>
+                            <div><span class="text-orange-600 dark:text-orange-400">●</span> Unhealthy: AQI 101-150, PM2.5 36-55</div>
+                            <div><span class="text-red-600 dark:text-red-400">●</span> Very Unhealthy: AQI 151+, PM2.5 56+</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Earthquake & Tsunami -->
+                <div>
+                    <h4 class="font-bold mb-2 text-red-600 dark:text-red-400">🌍 Earthquake & Tsunami</h4>
+                    <div class="space-y-1 opacity-75">
+                        <div><span class="font-semibold">Magnitude:</span> Earthquake strength (Richter scale)</div>
+                        <div><span class="font-semibold">Depth:</span> Distance below Earth's surface (km)</div>
+                        <div><span class="font-semibold">Epicenter:</span> Point on surface above earthquake origin</div>
+                        <div class="mt-2 pt-2 border-t border-gray-300 dark:border-gray-600">
+                            <div class="font-semibold mb-1">Magnitude Scale:</div>
+                            <div><span class="text-green-600 dark:text-green-400">●</span> Minor: <4.0 - Rarely felt</div>
+                            <div><span class="text-yellow-600 dark:text-yellow-400">●</span> Light: 4.0-4.9 - Noticeable shaking</div>
+                            <div><span class="text-orange-600 dark:text-orange-400">●</span> Moderate: 5.0-5.9 - Slight damage</div>
+                            <div><span class="text-red-600 dark:text-red-400">●</span> Strong: 6.0+ - Serious damage</div>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-gray-300 dark:border-gray-600">
+                            <div class="font-semibold mb-1">Tsunami Advisory Levels:</div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-5 h-5 bg-green-500 rounded font-bold text-white text-xs flex items-center justify-center">0</span>
+                                <span>No threat - Safe</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="w-5 h-5 bg-yellow-500 rounded font-bold text-white text-xs flex items-center justify-center">1</span>
+                                <span>Advisory #1: Minor threat - Stay alert</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="w-5 h-5 bg-orange-500 rounded font-bold text-white text-xs flex items-center justify-center">2</span>
+                                <span>Advisory #2: Moderate threat - Prepare to evacuate</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="w-5 h-5 bg-red-500 rounded font-bold text-white text-xs flex items-center justify-center">3</span>
+                                <span>Advisory #3: High threat - Evacuate NOW!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-t border-gray-300 dark:border-gray-600 text-xs opacity-60 text-center">
+                <p>Data sources: PHIVOLCS (Philippine Institute of Volcanology and Seismology), USGS (US Geological Survey), Open-Meteo Weather API, PAGASA, IOC Sea Level Monitoring</p>
             </div>
         </div>
     </div>
     
     <!-- Footer -->
-    <footer class="text-center mt-6 text-xs sm:text-sm opacity-50 px-2">
-        <p class="mb-1">Last updated: <span id="update-time">{{ current_time }}</span></p>
-        <p class="text-xs">Data sources: PHIVOLCS, USGS, Open-Meteo, PAGASA, IOC Sea Level</p>
+    <footer class="text-center mt-6 text-xs opacity-50 px-2">
+        <p>Last updated: <span id="update-time">{{ current_time }}</span></p>
     </footer>
 </div>
 {% endblock %}
