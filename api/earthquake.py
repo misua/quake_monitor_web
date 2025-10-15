@@ -190,16 +190,25 @@ async def get_phivolcs_earthquakes(request: Request):
 async def get_usgs_earthquakes(request: Request):
     """Get USGS earthquake data"""
     try:
-        earthquakes = fetch_usgs_earthquakes()
+        # Try 4.5+ past day first
+        earthquakes = fetch_usgs_earthquakes(feed='4.5_day', philippines_only=True)
+        
+        # If no results, try past week
+        if not earthquakes:
+            earthquakes = fetch_usgs_earthquakes(feed='4.5_week', philippines_only=True)
+        
+        # If still no results, try 2.5+ past day
+        if not earthquakes:
+            earthquakes = fetch_usgs_earthquakes(feed='2.5_day', philippines_only=True)
         
         if not earthquakes:
             return templates.TemplateResponse(
                 "components/error.html",
                 {
                     "request": request,
-                    "error_type": "network",
-                    "title": "🌎 USGS Data Unavailable",
-                    "message": "Unable to connect to USGS earthquake service. Please check your internet connection.",
+                    "error_type": "info",
+                    "title": "🌎 No Recent Earthquakes",
+                    "message": "No significant earthquakes detected in the Philippines region recently. This is good news!",
                     "component": "USGS panel"
                 }
             )
