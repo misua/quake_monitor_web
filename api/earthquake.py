@@ -186,7 +186,7 @@ def get_top5_earthquakes():
 
 @router.get("/earthquakes/phivolcs", response_class=HTMLResponse)
 async def get_phivolcs_earthquakes(request: Request):
-    """Get PHIVOLCS earthquake data"""
+    """Get PHIVOLCS earthquake data (with USGS fallback for testing)"""
     profiling_wrapper = get_profiling_wrapper()
     
     try:
@@ -197,14 +197,26 @@ async def get_phivolcs_earthquakes(request: Request):
         else:
             earthquakes = fetch_phivolcs_earthquakes()
         
+        # TEMPORARY: Fallback to USGS if PHIVOLCS fails
+        if not earthquakes:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning("⚠️  PHIVOLCS failed, falling back to USGS data")
+            earthquakes = fetch_usgs_earthquakes(feed='all_day', philippines_only=True)
+            
+            if earthquakes:
+                # Add a note that this is USGS data
+                for eq in earthquakes:
+                    eq['source_note'] = 'USGS (PHIVOLCS unavailable)'
+        
         if not earthquakes:
             return templates.TemplateResponse(
                 "components/error.html",
                 {
                     "request": request,
                     "error_type": "network",
-                    "title": "🌍 PHIVOLCS Data Unavailable",
-                    "message": "Unable to connect to PHIVOLCS earthquake monitoring service. The website may be down or your internet connection may be offline.",
+                    "title": "🌍 Earthquake Data Unavailable",
+                    "message": "Unable to connect to earthquake monitoring services. Both PHIVOLCS and USGS are unavailable.",
                     "component": "PHIVOLCS panel"
                 }
             )
@@ -352,6 +364,32 @@ async def get_top5(request: Request):
                 "component": "Top 5 panel"
             }
         )
+
+
+@router.get("/earthquakes/compare")
+async def compare_sources():
+    """Compare PHIVOLCS vs USGS data (for testing)"""
+    try:
+        phivolcs_data = fetch_phivolcs_earthquakes()
+        usgs_data = fetch_usgs_earthquakes(feed='all_day', philippines_only=True)
+        
+        return {
+            "phivolcs": {
+                "count": len(phivolcs_data),
+                "earthquakes": phivolcs_data[:5] if phivolcs_data else []
+            },
+            "usgs": {
+                "count": len(usgs_data),
+                "earthquakes": usgs_data[:5] if usgs_data else []
+            },
+            "comparison": {
+                "phivolcs_working": len(phivolcs_data) > 0,
+                "usgs_working": len(usgs_data) > 0,
+                "recommendation": "USGS" if len(usgs_data) > len(phivolcs_data) else "PHIVOLCS"
+            }
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @router.get("/earthquakes/latest", response_class=HTMLResponse)
