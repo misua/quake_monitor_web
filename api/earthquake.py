@@ -28,7 +28,7 @@ EARTHQUAKE_URL = "https://earthquake.phivolcs.dost.gov.ph/"
 
 # Cache for PHIVOLCS data (60 second TTL)
 _phivolcs_cache = {"data": None, "timestamp": 0}
-CACHE_TTL = 60  # seconds
+CACHE_TTL = 30  # seconds
 
 
 def fetch_phivolcs_earthquakes():
