@@ -36,7 +36,9 @@ class SeaLevelMonitor:
         try:
             # Fetch last 30 minutes of data
             url = f"{IOC_BASE_URL}?code={self.station_code}&output=tab&period=0.5"
-            response = requests.get(url, timeout=15)
+            # Use tuple timeout: (3s connect, 7s read) = max 10s
+            timeout = (3, 7)
+            response = requests.get(url, timeout=timeout)
             response.raise_for_status()
             
             # Parse HTML table

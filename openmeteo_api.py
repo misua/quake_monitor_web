@@ -96,7 +96,9 @@ def fetch_weather_data():
             "forecast_days": 7
         }
         
-        response = requests.get(WEATHER_API, params=params, timeout=10)
+        # Use tuple timeout: (2s connect, 5s read) = max 7s (fast API)
+        timeout = (2, 5)
+        response = requests.get(WEATHER_API, params=params, timeout=timeout)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -135,7 +137,9 @@ def fetch_air_quality_data():
             "forecast_days": 3
         }
         
-        response = requests.get(AIR_QUALITY_API, params=params, timeout=10)
+        # Use tuple timeout: (2s connect, 5s read) = max 7s (fast API)
+        timeout = (2, 5)
+        response = requests.get(AIR_QUALITY_API, params=params, timeout=timeout)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -167,7 +171,9 @@ def fetch_marine_data():
             "forecast_days": 3
         }
         
-        response = requests.get(MARINE_API, params=params, timeout=10)
+        # Use tuple timeout: (2s connect, 5s read) = max 7s (fast API)
+        timeout = (2, 5)
+        response = requests.get(MARINE_API, params=params, timeout=timeout)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -189,7 +195,9 @@ def fetch_flood_data():
             "forecast_days": 7
         }
         
-        response = requests.get(FLOOD_API, params=params, timeout=10)
+        # Use tuple timeout: (2s connect, 5s read) = max 7s (fast API)
+        timeout = (2, 5)
+        response = requests.get(FLOOD_API, params=params, timeout=timeout)
         response.raise_for_status()
         return response.json()
     except Exception as e:

@@ -62,7 +62,9 @@ def fetch_tide_data():
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
-        response = requests.get(TIDE_FORECAST_URL, headers=headers, timeout=10)
+        # Use tuple timeout: (3s connect, 7s read) = max 10s
+        timeout = (3, 7)
+        response = requests.get(TIDE_FORECAST_URL, headers=headers, timeout=timeout)
         response.raise_for_status()
         
         # Parse HTML
