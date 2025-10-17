@@ -28,6 +28,7 @@ from api import weather, earthquake, tsunami, monitoring
 
 # Import profiling utilities
 from utils.profiling import init_profiling
+from utils.performance_monitor import PerformanceMonitorMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -43,6 +44,9 @@ LOCATION_NAME = "Davao City, Philippines"
 
 # Initialize FastAPI app
 app = FastAPI(title="Earthquake & Weather Monitor", version="2.0")
+
+# Add performance monitoring middleware
+app.add_middleware(PerformanceMonitorMiddleware)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=str(SCRIPT_DIR / "static")), name="static")

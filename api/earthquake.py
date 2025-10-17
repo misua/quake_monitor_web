@@ -20,8 +20,10 @@ sys.path.insert(0, str(PARENT_DIR))
 
 from usgs_monitor import fetch_usgs_earthquakes
 from utils.profiling import get_profiling_wrapper
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 
 EARTHQUAKE_URL = "https://earthquake.phivolcs.dost.gov.ph/"
@@ -34,12 +36,15 @@ CACHE_TTL = 30  # seconds - balance between freshness and performance
 def fetch_phivolcs_earthquakes():
     """Fetch and parse earthquakes from PHIVOLCS with caching"""
     profiling_wrapper = get_profiling_wrapper()
+    start_time = time.time()
     
     # Check cache first
     current_time = time.time()
     if _phivolcs_cache["data"] and (current_time - _phivolcs_cache["timestamp"]) < CACHE_TTL:
+        logger.debug("✓ Using cached PHIVOLCS data")
         return _phivolcs_cache["data"]
     
+    logger.info("🔄 Fetching fresh PHIVOLCS data...")
     try:
         # Profile the external API call
         if profiling_wrapper:
@@ -88,10 +93,20 @@ def fetch_phivolcs_earthquakes():
                     })
             
             if events:
+                duration = time.time() - start_time
                 print(f"✓ PHIVOLCS: Found {len(events)} earthquakes")
                 # Update cache
                 _phivolcs_cache["data"] = events
                 _phivolcs_cache["timestamp"] = current_time
+                
+                # Log performance
+                if duration > 5.0:
+                    logger.error(f"🚨 CRITICAL: PHIVOLCS fetch took {duration:.2f}s - POTENTIAL SEGFAULT RISK!")
+                elif duration > 2.0:
+                    logger.warning(f"⚠️  SLOW: PHIVOLCS fetch took {duration:.2f}s")
+                else:
+                    logger.info(f"✓ PHIVOLCS fetch completed in {duration:.2f}s")
+                
                 return events
         
         print("⚠ PHIVOLCS: No earthquake table found")
