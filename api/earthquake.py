@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 import urllib3
 import hashlib
+import time
+from functools import lru_cache
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -24,10 +26,19 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templa
 
 EARTHQUAKE_URL = "https://earthquake.phivolcs.dost.gov.ph/"
 
+# Cache for PHIVOLCS data (60 second TTL)
+_phivolcs_cache = {"data": None, "timestamp": 0}
+CACHE_TTL = 60  # seconds
+
 
 def fetch_phivolcs_earthquakes():
-    """Fetch and parse earthquakes from PHIVOLCS"""
+    """Fetch and parse earthquakes from PHIVOLCS with caching"""
     profiling_wrapper = get_profiling_wrapper()
+    
+    # Check cache first
+    current_time = time.time()
+    if _phivolcs_cache["data"] and (current_time - _phivolcs_cache["timestamp"]) < CACHE_TTL:
+        return _phivolcs_cache["data"]
     
     try:
         # Profile the external API call
@@ -78,6 +89,9 @@ def fetch_phivolcs_earthquakes():
             
             if events:
                 print(f"✓ PHIVOLCS: Found {len(events)} earthquakes")
+                # Update cache
+                _phivolcs_cache["data"] = events
+                _phivolcs_cache["timestamp"] = current_time
                 return events
         
         print("⚠ PHIVOLCS: No earthquake table found")
