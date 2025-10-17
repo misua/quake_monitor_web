@@ -26,9 +26,9 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templa
 
 EARTHQUAKE_URL = "https://earthquake.phivolcs.dost.gov.ph/"
 
-# Cache for PHIVOLCS data (60 second TTL)
+# Cache for PHIVOLCS data (30 second TTL)
 _phivolcs_cache = {"data": None, "timestamp": 0}
-CACHE_TTL = 30  # seconds
+CACHE_TTL = 30  # seconds - balance between freshness and performance
 
 
 def fetch_phivolcs_earthquakes():
@@ -96,11 +96,14 @@ def fetch_phivolcs_earthquakes():
         
         print("⚠ PHIVOLCS: No earthquake table found")
         return []
+    except requests.exceptions.RequestException as e:
+        print(f"⚠ Network error fetching PHIVOLCS data: {e}")
+        return _phivolcs_cache.get("data", [])  # Return cached data if available
     except Exception as e:
-        print(f"Error fetching PHIVOLCS data: {e}")
+        print(f"⚠ Error fetching PHIVOLCS data: {e}")
         import traceback
         traceback.print_exc()
-        return []
+        return _phivolcs_cache.get("data", [])  # Return cached data if available
 
 
 def get_top5_earthquakes():
