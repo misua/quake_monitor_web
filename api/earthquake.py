@@ -17,6 +17,7 @@ PARENT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PARENT_DIR))
 
 from usgs_monitor import fetch_usgs_earthquakes
+from utils.profiling import get_profiling_wrapper
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -26,8 +27,15 @@ EARTHQUAKE_URL = "https://earthquake.phivolcs.dost.gov.ph/"
 
 def fetch_phivolcs_earthquakes():
     """Fetch and parse earthquakes from PHIVOLCS"""
+    profiling_wrapper = get_profiling_wrapper()
+    
     try:
-        response = requests.get(EARTHQUAKE_URL, verify=False, timeout=30)
+        # Profile the external API call
+        if profiling_wrapper:
+            with profiling_wrapper({"data_source": "phivolcs", "operation": "fetch_earthquakes"}):
+                response = requests.get(EARTHQUAKE_URL, verify=False, timeout=30)
+        else:
+            response = requests.get(EARTHQUAKE_URL, verify=False, timeout=30)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -130,8 +138,15 @@ def get_top5_earthquakes():
 @router.get("/earthquakes/phivolcs", response_class=HTMLResponse)
 async def get_phivolcs_earthquakes(request: Request):
     """Get PHIVOLCS earthquake data"""
+    profiling_wrapper = get_profiling_wrapper()
+    
     try:
-        earthquakes = fetch_phivolcs_earthquakes()
+        # Profile the endpoint
+        if profiling_wrapper:
+            with profiling_wrapper({"endpoint": "phivolcs", "type": "earthquake_data"}):
+                earthquakes = fetch_phivolcs_earthquakes()
+        else:
+            earthquakes = fetch_phivolcs_earthquakes()
         
         if not earthquakes:
             return templates.TemplateResponse(
@@ -189,9 +204,15 @@ async def get_phivolcs_earthquakes(request: Request):
 @router.get("/earthquakes/usgs", response_class=HTMLResponse)
 async def get_usgs_earthquakes(request: Request):
     """Get USGS earthquake data"""
+    profiling_wrapper = get_profiling_wrapper()
+    
     try:
         # Try 4.5+ past day first
-        earthquakes = fetch_usgs_earthquakes(feed='4.5_day', philippines_only=True)
+        if profiling_wrapper:
+            with profiling_wrapper({"endpoint": "usgs", "type": "earthquake_data"}):
+                earthquakes = fetch_usgs_earthquakes(feed='4.5_day', philippines_only=True)
+        else:
+            earthquakes = fetch_usgs_earthquakes(feed='4.5_day', philippines_only=True)
         
         # If no results, try past week
         if not earthquakes:
@@ -246,8 +267,14 @@ async def get_usgs_earthquakes(request: Request):
 @router.get("/earthquakes/top5", response_class=HTMLResponse)
 async def get_top5(request: Request):
     """Get top 5 earthquakes by location"""
+    profiling_wrapper = get_profiling_wrapper()
+    
     try:
-        top5 = get_top5_earthquakes()
+        if profiling_wrapper:
+            with profiling_wrapper({"endpoint": "top5", "type": "earthquake_clusters"}):
+                top5 = get_top5_earthquakes()
+        else:
+            top5 = get_top5_earthquakes()
         return templates.TemplateResponse(
             "components/top5.html",
             {"request": request, "top5": top5}

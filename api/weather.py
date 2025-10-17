@@ -19,6 +19,7 @@ from openmeteo_api import (
     get_aqi_level,
     get_pm25_level
 )
+from utils.profiling import get_profiling_wrapper
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
@@ -31,6 +32,8 @@ LOCATION_NAME = "Davao City, Philippines"
 @router.get("/weather", response_class=HTMLResponse)
 async def get_weather(request: Request):
     """Get weather data and render component"""
+    profiling_wrapper = get_profiling_wrapper()
+    
     try:
         # Add parent directory to path for imports
         PARENT_DIR = Path(__file__).parent.parent.parent
@@ -40,11 +43,20 @@ async def get_weather(request: Request):
         from pagasa_monitor import get_typhoon_status, fetch_rainfall_data
         from tide_monitor import get_tide_status
         
-        weather_data = fetch_weather_data()
-        air_quality_data = fetch_air_quality_data()
-        typhoon_data = get_typhoon_status()
-        rainfall_data = fetch_rainfall_data()
-        tide_data = get_tide_status()
+        # Profile the weather data fetching
+        if profiling_wrapper:
+            with profiling_wrapper({"endpoint": "weather", "type": "weather_data"}):
+                weather_data = fetch_weather_data()
+                air_quality_data = fetch_air_quality_data()
+                typhoon_data = get_typhoon_status()
+                rainfall_data = fetch_rainfall_data()
+                tide_data = get_tide_status()
+        else:
+            weather_data = fetch_weather_data()
+            air_quality_data = fetch_air_quality_data()
+            typhoon_data = get_typhoon_status()
+            rainfall_data = fetch_rainfall_data()
+            tide_data = get_tide_status()
         
         # Get current hour in Manila timezone for hourly forecast
         manila_tz = pytz.timezone('Asia/Manila')

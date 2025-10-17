@@ -153,6 +153,106 @@ The application automatically switches between day and night themes:
 - **Night Mode**: 19:00 (7 PM) - 07:00 (7 AM)
 - **Day Mode**: 07:00 (7 AM) - 19:00 (7 PM)
 
+## Continuous Profiling (Optional)
+
+The application supports continuous profiling with **Grafana Cloud Profiles (Pyroscope)** to help diagnose performance issues and segmentation faults.
+
+### Why Use Profiling?
+
+- 🔍 **Debug Segmentation Faults** - Capture CPU/memory patterns before crashes
+- 📊 **Performance Analysis** - Identify bottlenecks in data fetching
+- 🔥 **Flame Graphs** - Visualize where your app spends CPU time
+- 💰 **Free Tier** - Grafana Cloud includes free profiling (15 days retention, 50GB storage)
+
+### Setup Grafana Cloud Profiles
+
+1. **Create Grafana Cloud Account** (Free)
+   - Go to https://grafana.com/auth/sign-up/create-user
+   - Create a new stack (choose closest region)
+
+2. **Get Your Credentials**
+   - Navigate to: Grafana Cloud Portal → Your Stack → Profiles → Details
+   - Copy: URL, Username, and Password
+
+3. **Configure Environment Variables**
+   
+   Create a `.env` file in the project root:
+   ```bash
+   # Enable profiling
+   PROFILING_ENABLED=true
+   
+   # Grafana Cloud credentials (from step 2)
+   PYROSCOPE_SERVER_URL=https://profiles-prod-007.grafana.net
+   PYROSCOPE_USERNAME=1408536
+   PYROSCOPE_API_KEY=glc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   
+   # Optional: environment identifier
+   ENVIRONMENT=production
+   ```
+
+4. **Run the Application**
+   ```bash
+   python app.py
+   ```
+   
+   You should see:
+   ```
+   ✓ Pyroscope profiler initialized successfully
+   📊 Continuous profiling enabled - data will be sent to Grafana Cloud
+   ```
+
+5. **View Profiles in Grafana Cloud**
+   - Open Grafana Cloud → Profiles
+   - Select application: `quake-monitor-web`
+   - View flame graphs and CPU usage
+   - Filter by endpoint labels (phivolcs, usgs, weather, etc.)
+
+### Profiling Configuration
+
+The profiling system is **optional** and **disabled by default**. It only activates when you explicitly enable it.
+
+**Environment Variables:**
+- `PROFILING_ENABLED` - Set to `true` to enable profiling (default: `false`)
+- `PYROSCOPE_SERVER_URL` - Grafana Cloud Profiles URL
+- `PYROSCOPE_USERNAME` - Grafana Cloud username
+- `PYROSCOPE_API_KEY` - Grafana Cloud API key
+- `ENVIRONMENT` - Environment name for tagging (default: `production`)
+
+**Performance Impact:**
+- CPU overhead: <5%
+- Memory overhead: ~10-20 MB
+- Sample rate: 100Hz (configurable)
+
+### Disable Profiling
+
+To disable profiling, simply set:
+```bash
+PROFILING_ENABLED=false
+```
+
+Or remove the environment variable entirely. The application will run normally without profiling.
+
+### Troubleshooting Profiling
+
+**Profiling not starting?**
+```bash
+# Check logs for errors
+python app.py 2>&1 | grep -i pyroscope
+```
+
+**No data in Grafana Cloud?**
+1. Verify credentials are correct
+2. Check network connectivity: `curl -I https://profiles-prod-XXX.grafana.net`
+3. Ensure `PROFILING_ENABLED=true` is set
+4. Wait 30-60 seconds for first data to appear
+
+**Want to reduce overhead?**
+
+Edit `utils/profiling.py` and change:
+```python
+sample_rate=50,  # Reduce from 100Hz to 50Hz
+```
+
 ## Troubleshooting
 
 ### Port Already in Use

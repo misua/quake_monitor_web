@@ -6,6 +6,7 @@ FastAPI + HTMX implementation
 
 import os
 import sys
+import logging
 from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
@@ -20,6 +21,16 @@ sys.path.insert(0, str(PARENT_DIR))
 
 # Import API routers
 from api import weather, earthquake, tsunami, monitoring
+
+# Import profiling utilities
+from utils.profiling import init_profiling
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Configuration
 LATITUDE = 7.190708
@@ -40,6 +51,21 @@ app.include_router(weather.router, prefix="/api", tags=["weather"])
 app.include_router(earthquake.router, prefix="/api", tags=["earthquake"])
 app.include_router(tsunami.router, prefix="/api", tags=["tsunami"])
 app.include_router(monitoring.router, prefix="/api", tags=["monitoring"])
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on application startup"""
+    logger.info("🌍 Starting Earthquake & Weather Monitor...")
+    
+    # Initialize profiling (if enabled)
+    profiling_initialized = init_profiling()
+    if profiling_initialized:
+        logger.info("📊 Continuous profiling enabled - data will be sent to Grafana Cloud")
+    else:
+        logger.info("📊 Continuous profiling disabled")
+    
+    logger.info("✓ Application startup complete")
 
 
 @app.get("/", response_class=HTMLResponse)

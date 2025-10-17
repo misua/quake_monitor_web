@@ -21,3 +21,6 @@ python-dotenv==1.0.1
 # Utilities
 urllib3==2.1.0
 pytz==2024.1
+
+# Profiling
+pyroscope-io==0.8.11
