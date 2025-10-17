@@ -46,14 +46,24 @@ def fetch_phivolcs_earthquakes():
     
     logger.info("🔄 Fetching fresh PHIVOLCS data...")
     try:
-        # Profile the external API call
+        # Profile the external API call with strict timeout
+        # Use tuple timeout: (connect timeout, read timeout)
+        timeout = (5, 10)  # 5s to connect, 10s to read - total max 15s
+        
         if profiling_wrapper:
             with profiling_wrapper({"data_source": "phivolcs", "operation": "fetch_earthquakes"}):
-                response = requests.get(EARTHQUAKE_URL, verify=False, timeout=30)
+                response = requests.get(EARTHQUAKE_URL, verify=False, timeout=timeout)
         else:
-            response = requests.get(EARTHQUAKE_URL, verify=False, timeout=30)
+            response = requests.get(EARTHQUAKE_URL, verify=False, timeout=timeout)
         response.raise_for_status()
         
+        # Check response size to prevent parsing huge/malformed HTML
+        content_length = len(response.text)
+        if content_length > 5_000_000:  # 5MB limit
+            logger.error(f"🚨 PHIVOLCS response too large: {content_length} bytes - skipping parse")
+            return _phivolcs_cache.get("data", [])
+        
+        logger.debug(f"Parsing PHIVOLCS HTML ({content_length} bytes)")
         soup = BeautifulSoup(response.text, 'html.parser')
         tables = soup.find_all('table')
         
@@ -111,8 +121,13 @@ def fetch_phivolcs_earthquakes():
         
         print("⚠ PHIVOLCS: No earthquake table found")
         return []
+    except requests.exceptions.Timeout as e:
+        duration = time.time() - start_time
+        logger.error(f"🚨 TIMEOUT: PHIVOLCS request timed out after {duration:.2f}s - {e}")
+        return _phivolcs_cache.get("data", [])  # Return cached data if available
     except requests.exceptions.RequestException as e:
-        print(f"⚠ Network error fetching PHIVOLCS data: {e}")
+        duration = time.time() - start_time
+        logger.warning(f"⚠ Network error fetching PHIVOLCS data after {duration:.2f}s: {e}")
         return _phivolcs_cache.get("data", [])  # Return cached data if available
     except Exception as e:
         print(f"⚠ Error fetching PHIVOLCS data: {e}")
