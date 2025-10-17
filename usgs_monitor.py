@@ -68,7 +68,9 @@ def fetch_usgs_earthquakes(feed='4.5_day', philippines_only=True):
         url = USGS_FEEDS.get(feed, USGS_FEEDS['4.5_day'])
         
         print(f"Fetching USGS data from: {feed}")
-        response = requests.get(url, timeout=15)
+        # Use tuple timeout: (3s connect, 7s read) = max 10s
+        timeout = (3, 7)
+        response = requests.get(url, timeout=timeout)
         response.raise_for_status()
         
         data = response.json()

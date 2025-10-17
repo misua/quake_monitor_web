@@ -7,19 +7,43 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import urllib3
+import time
+import logging
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 router = APIRouter()
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
+logger = logging.getLogger(__name__)
+
+# Cache for tsunami data (60 second TTL)
+_tsunami_cache = {"data": None, "timestamp": 0}
+CACHE_TTL = 60  # seconds
 
 
 def fetch_tsunami_warnings():
-    """Fetch tsunami warning information from PHIVOLCS"""
+    """Fetch tsunami warning information from PHIVOLCS with caching"""
+    start_time = time.time()
+    
+    # Check cache first
+    current_time = time.time()
+    if _tsunami_cache["data"] and (current_time - _tsunami_cache["timestamp"]) < CACHE_TTL:
+        logger.debug("✓ Using cached tsunami data")
+        return _tsunami_cache["data"]
+    
+    logger.info("🔄 Fetching fresh tsunami data...")
     try:
         url = "https://tsunami.phivolcs.dost.gov.ph/"
-        response = requests.get(url, verify=False, timeout=30)
+        # Use strict timeout: (5s connect, 10s read) = max 15s
+        timeout = (5, 10)
+        response = requests.get(url, verify=False, timeout=timeout)
         response.raise_for_status()
+        
+        # Check response size
+        content_length = len(response.text)
+        if content_length > 5_000_000:  # 5MB limit
+            logger.error(f"🚨 Tsunami response too large: {content_length} bytes")
+            return _tsunami_cache.get("data", [{"message": "Service unavailable", "level": "error"}])
         
         soup = BeautifulSoup(response.text, 'html.parser')
         tsunami_data = []
@@ -109,13 +133,36 @@ def fetch_tsunami_warnings():
             if tsunami_data:
                 break
         
-        return tsunami_data if tsunami_data else [{"message": "No active tsunami warnings", "level": "normal"}]
+        result = tsunami_data if tsunami_data else [{"message": "No active tsunami warnings", "level": "normal"}]
         
+        # Update cache
+        _tsunami_cache["data"] = result
+        _tsunami_cache["timestamp"] = current_time
+        
+        # Log performance
+        duration = time.time() - start_time
+        if duration > 5.0:
+            logger.error(f"🚨 CRITICAL: Tsunami fetch took {duration:.2f}s - POTENTIAL SEGFAULT RISK!")
+        elif duration > 2.0:
+            logger.warning(f"⚠️  SLOW: Tsunami fetch took {duration:.2f}s")
+        else:
+            logger.info(f"✓ Tsunami fetch completed in {duration:.2f}s")
+        
+        return result
+        
+    except requests.exceptions.Timeout as e:
+        duration = time.time() - start_time
+        logger.error(f"🚨 TIMEOUT: Tsunami request timed out after {duration:.2f}s - {e}")
+        return _tsunami_cache.get("data", [{"message": "Service timeout", "level": "error"}])
+    except requests.exceptions.RequestException as e:
+        duration = time.time() - start_time
+        logger.warning(f"⚠ Network error fetching tsunami data after {duration:.2f}s: {e}")
+        return _tsunami_cache.get("data", [{"message": "Network error", "level": "error"}])
     except Exception as e:
-        print(f"Error fetching tsunami warnings: {e}")
+        logger.error(f"Error fetching tsunami warnings: {e}")
         import traceback
         traceback.print_exc()
-        return [{"message": "Unable to fetch tsunami data", "level": "error"}]
+        return _tsunami_cache.get("data", [{"message": "Unable to fetch tsunami data", "level": "error"}])
 
 
 @router.get("/tsunami", response_class=HTMLResponse)

@@ -22,8 +22,15 @@ def fetch_typhoon_data():
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
         
-        response = requests.get(url, headers=headers, timeout=15, verify=False)
+        # Use tuple timeout: (5s connect, 10s read) = max 15s
+        timeout = (5, 10)
+        response = requests.get(url, headers=headers, timeout=timeout, verify=False)
         response.raise_for_status()
+        
+        # Check response size
+        if len(response.content) > 5_000_000:  # 5MB limit
+            print("⚠ PAGASA response too large, skipping")
+            return []
         
         soup = BeautifulSoup(response.content, 'html.parser')
         
@@ -121,7 +128,8 @@ def fetch_rainfall_data(region="Region XI", city="Davao"):
         
         # Try to get regional forecast
         try:
-            response = requests.get(regional_url, headers=headers, timeout=15, verify=False)
+            timeout = (5, 10)
+            response = requests.get(regional_url, headers=headers, timeout=timeout, verify=False)
             response.raise_for_status()
             soup = BeautifulSoup(response.content, 'html.parser')
             
@@ -148,7 +156,8 @@ def fetch_rainfall_data(region="Region XI", city="Davao"):
         # 2. Check main page for general advisories affecting our region
         try:
             main_url = "https://www.pagasa.dost.gov.ph/"
-            response = requests.get(main_url, headers=headers, timeout=15, verify=False)
+            timeout = (5, 10)
+            response = requests.get(main_url, headers=headers, timeout=timeout, verify=False)
             response.raise_for_status()
             soup = BeautifulSoup(response.content, 'html.parser')
             
