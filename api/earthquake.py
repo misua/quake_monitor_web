@@ -59,8 +59,10 @@ def fetch_phivolcs_earthquakes():
         
         # Check response size to prevent parsing huge/malformed HTML
         content_length = len(response.text)
-        if content_length > 5_000_000:  # 5MB limit
-            logger.error(f"🚨 PHIVOLCS response too large: {content_length} bytes - skipping parse")
+        logger.info(f"📊 PHIVOLCS response size: {content_length:,} bytes ({content_length/1024/1024:.2f} MB)")
+        
+        if content_length > 10_000_000:  # 10MB limit (increased from 5MB)
+            logger.error(f"🚨 PHIVOLCS response too large: {content_length:,} bytes - skipping parse")
             return _phivolcs_cache.get("data", [])
         
         logger.debug(f"Parsing PHIVOLCS HTML ({content_length} bytes)")
